@@ -1,0 +1,34 @@
+name: FramePicture
+version: 1.3.6
+author: Howaner
+website: http://howaner.de
+description: You can set Pictures in Frames
+softdepend: [Vault]
+main: de.howaner.FramePicture.FramePicturePlugin
+
+commands:
+  FramePicture:
+    description: FramePicture Command
+    usage: /<command> <set/get/reload>
+    aliases: [set, get, reload]
+  fp:
+    description: FramePicture Command
+    usage: /<command> <set/get/reload>
+    aliases: [set, get, reload]
+permissions:
+  FramePicture.*:
+    description: Give all Permissions for FramePicture
+    children:
+      FramePicture.set: true
+      FramePicture.get: true
+      FramePicture.reload: true
+    default: op
+  FramePicture.set:
+    description: Place a Picture in a Frame
+    default: true
+  FramePicture.get:
+    description: Get the Url from a Frame with a Picture
+    default: true
+  FramePicture.reload:
+    description: Reload the Config
+    default: op
