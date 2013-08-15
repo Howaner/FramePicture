@@ -1,0 +1,17 @@
+# The Messages from FramePicture.
+PLUGIN_ENABLED: Plugin activer!
+PLUGIN_DISABLED: Plugin desactiver!
+NO_PLAYER: '&4Vous n''etes pas un joueur!'
+NO_PERMISSION: '&4Vous n''avez pas la permission!'
+ALREADY_SELECTION: '&4Vous avez deja une selection!'
+CLICK_FRAME: '&3Clique droit sur un cadre!'
+GETTING_MODE_ENABLED: '&2Mode "voir url" activer!'
+GETTING_MODE_DISABLED: '&2Mode "voir url" desactiver!'
+CREATING_CANCELLED: '&3Creation annuler!'
+PLUGIN_RELOAD: '&2Plugin recharger!'
+FRAME_SET: '&2Image choisi a l''url &f%url'
+NO_FRAMEPICTURE: '&4Ce n''est pas un cadre!'
+GET_URL: '&3L''url de l''image est &f%url'
+NO_PICTURE: '&4%url n''est pas une image!'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4Vous n''avez pas assez d''argent!'
