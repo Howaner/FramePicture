@@ -26,14 +26,14 @@ public class FrameListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-		//Überprüfungen...
+		//Check
 		if (event.isCancelled()) return;
 		if (event.getRightClicked().getType() != EntityType.ITEM_FRAME) return;
 		ItemFrame entity = (ItemFrame) event.getRightClicked();
 		Player player = event.getPlayer();
 		///CREATING
 		if (Cache.hasCacheCreating(player)) {
-			//Geld
+			//Money
 			if (Config.MONEY_ENABLED) {
 				if (manager.economy.getBalance(player.getName()) < Config.CREATE_PRICE) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
@@ -71,7 +71,7 @@ public class FrameListener implements Listener {
 				player.sendMessage(Lang.NO_FRAMEPICTURE.getText());
 				return;
 			}
-			player.sendMessage(Lang.PREFIX.getText() + Lang.GET_URL.getText().replace("%url", frame.getPicturePath()));
+			player.sendMessage(Lang.PREFIX.getText() + Lang.GET_URL.getText().replace("%url", frame.getPath()));
 			event.setCancelled(true);
 			Cache.removeCacheGetting(player);
 		}
@@ -88,7 +88,6 @@ public class FrameListener implements Listener {
 	public void onHangingBreak(HangingBreakEvent event) {
 		if (event.isCancelled()) return;
 		Entity entity = event.getEntity();
-		if (entity.getType() != EntityType.ITEM_FRAME) return;
 		if (manager.isFramePicture(entity))
 		{
 			ItemFrame iFrame = (ItemFrame)entity;

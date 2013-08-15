@@ -9,23 +9,11 @@ import org.bukkit.map.MapView;
 
 public class Renderer extends MapRenderer {
 	
-	private final int middleX;
-	private final int middleZ;
 	private final Image image;
 	private boolean rendered = false;
 	
-	public Renderer(int middleX, int middleZ, Image image) {
-		this.middleX = middleX;
-		this.middleZ = middleZ;
+	public Renderer(Image image) {
 		this.image = image;
-	}
-	
-	public int getMiddleX() {
-		return this.middleX;
-	}
-	
-	public int getMiddlZ() {
-		return this.middleZ;
 	}
 	
 	public Image getImage() {
@@ -36,11 +24,27 @@ public class Renderer extends MapRenderer {
 		return this.rendered;
 	}
 	
+	private void removeCursors(MapCanvas canvas) {
+		for (int i=0; i<canvas.getCursors().size(); i++) {
+			canvas.getCursors().removeCursor(canvas.getCursors().getCursor(i));
+		}
+	}
+	
 	@Override
-	public void render(MapView view, MapCanvas canvas, Player player) {
+	public void render(MapView view, final MapCanvas canvas, Player player) {
 		if (this.rendered) return;
-		canvas.drawImage(middleX, middleZ, image);
+		this.removeCursors(canvas);
 		this.rendered = true;
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					canvas.drawImage(0, 0, image);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 	}
 
 }

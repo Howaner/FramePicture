@@ -7,7 +7,6 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.map.MapView;
 
 public class Utils {
@@ -20,12 +19,7 @@ public class Utils {
 	public static Image getPicture(String picture) throws Exception {
 		Image image;
 		if (picture.startsWith("http://") || picture.startsWith("https://") || picture.startsWith("ftp://")) {
-			URL url;
-			try {
-				url = new URL(picture);
-			} catch (Exception e) {
-				throw new Exception("Not found!");
-			}
+			URL url = new URL(picture);
 			try {
 				image = ImageIO.read(url);
 			} catch (Exception e) {
@@ -33,7 +27,7 @@ public class Utils {
 			}
 		} else {
 			File file = new File(imageFolder, picture);
-			if (file == null || !file.exists()) {
+			if (!file.exists()) {
 				throw new Exception("Not found!");
 			}
 			try {
@@ -54,20 +48,18 @@ public class Utils {
 		}
 	}
 	
-	public static Location getStandardLocation(Location loc) {
-		return new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-	}
-	
 	public static short createMapId() {
 		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0));
 		return view.getId();
 	}
 	
-	public static MapView generateMap(short mapId) {
+	public static MapView generateMap(short id) {
+		MapView view = Bukkit.getMap(id);
+		if (view != null) return view;
 		while (true) {
-			MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0));
-			if (view.getId() == mapId) return view;
-			if (view.getId() > mapId) return null;
+			view = Bukkit.createMap(Bukkit.getWorlds().get(0));
+			if (view.getId() == id) return view;
+			if (view.getId() > id) return null;
 		}
 	}
 

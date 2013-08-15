@@ -29,6 +29,8 @@ import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
 import de.howaner.FramePicture.util.Utils;
+import org.bukkit.map.MapRenderer;
+import org.bukkit.map.MapView;
 
 public class FrameManager {
 	public FramePicturePlugin p;
@@ -92,7 +94,7 @@ public class FrameManager {
 	public boolean removeFrame(Frame frame) {
 		for (Entry<Short, Frame> e : this.frames.entrySet()) {
 			if (frame == e.getValue()) {
-				this.frames.remove(e.getKey());
+				this.removeFrame(e.getKey());
 				return true;
 			}
 		}
@@ -107,6 +109,12 @@ public class FrameManager {
 		Bukkit.getPluginManager().callEvent(customEvent);
 		if (customEvent.isCancelled())
 			return false;
+		
+		//Delete Picture
+		MapView view = Bukkit.getMap(frame.getMapId());
+		for (MapRenderer renderer : view.getRenderers()) {
+			view.removeRenderer(renderer);
+		}
 		
 		this.frames.remove(mapId);
 		this.saveFrames();
@@ -135,11 +143,7 @@ public class FrameManager {
 	
 	public List<Frame> getFrames() {
 		List<Frame> frameList = new ArrayList<Frame>();
-		for (Entry<Short, Frame> e : this.frames.entrySet())
-		{
-			Frame frame = e.getValue();
-			frameList.add(frame);
-		}
+		frameList.addAll(frames.values());
 		return frameList;
 	}
 	
@@ -148,11 +152,12 @@ public class FrameManager {
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(framesFile);
 		for (String key : config.getKeys(false)) {
 			if (key.startsWith("Frame")) {
-				this.getLogger().info("Sie verwenden eine alte Frames Datei von FramePicture!");
-				this.getLogger().info("Sie wird nun geupdatet!");
+				this.getLogger().info("You have a old Frames File Version!");
+				this.getLogger().info("A Update is in Progress..");
 				this.loadOldFrames();
 				this.saveFrames();
 				this.loadFrames();
+				this.getLogger().info("Update finished!");
 				return;
 			}
 			Short mapId = Short.parseShort(key);
@@ -170,7 +175,7 @@ public class FrameManager {
 	public void saveFrames() {
 		YamlConfiguration config = new YamlConfiguration();
 		for (Frame frame : this.getFrames()) {
-			config.set(frame.getMapId().toString(), frame.getPicturePath());
+			config.set(frame.getMapId().toString(), frame.getPath());
 		}
 		try {
 			config.save(framesFile);

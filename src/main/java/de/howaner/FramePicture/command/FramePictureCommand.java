@@ -29,7 +29,7 @@ public class FramePictureCommand implements CommandExecutor {
 		String aufgabe = args[0];
 		///SET
 		if (aufgabe.equalsIgnoreCase("set")) {
-			//Ist er ein Spieler?
+			//Is a Player?
 			if (!(sender instanceof Player)) {
 				sender.sendMessage(Lang.PREFIX.getText() + Lang.NO_PLAYER.getText());
 				return true;
@@ -54,7 +54,7 @@ public class FramePictureCommand implements CommandExecutor {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_SELECTION.getText());
 				return true;
 			}
-			//Geld
+			//Money
 			if (Config.MONEY_ENABLED) {
 				if (manager.economy.getBalance(player.getName()) < Config.CREATE_PRICE) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());

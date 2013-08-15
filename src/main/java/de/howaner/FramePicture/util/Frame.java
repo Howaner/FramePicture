@@ -11,7 +11,6 @@ import de.howaner.FramePicture.FramePicturePlugin;
 public class Frame {
 	
 	private String path;
-	private Image cacheImage = null;
 	private final Short mapId;
 	
 	public Frame(String path, final Short mapId) {
@@ -23,25 +22,25 @@ public class Frame {
 		return this.mapId;
 	}
 	
-	public String getPicturePath() {
+	public String getPath() {
 		return this.path;
 	}
 	
-	public void setPicturePath(String path) {
+	public void setPath(String path) {
 		this.path = path;
-		this.cacheImage = null;
 		this.update();
 	}
 	
 	public Image getPicture() {
-		if (this.cacheImage == null)
-		{
-			try {
-				this.cacheImage = Utils.getPicture(this.getPicturePath());
-				if (Config.CHANGE_SIZE_ENABLED) cacheImage = cacheImage.getScaledInstance(Config.SIZE_WIDTH, Config.SIZE_HEIGHT, Image.SCALE_DEFAULT);
-			} catch (Exception e) { }
+		try {
+			Image image = Utils.getPicture(this.getPath());
+			if (image == null) return null;
+			if (Config.CHANGE_SIZE_ENABLED)
+					image = image.getScaledInstance(Config.SIZE_WIDTH, Config.SIZE_HEIGHT, Image.SCALE_DEFAULT);
+			return image;
+		} catch (Exception e) {
+			return null;
 		}
-		return this.cacheImage;
 	}
 	
 	public void update() {
@@ -49,20 +48,23 @@ public class Frame {
 		if (view == null) {
 			view = Utils.generateMap(this.mapId);
 			if (view == null) {
-				FramePicturePlugin.log.warning("Frame " + this.mapId + " has an error!");
+				FramePicturePlugin.log.warning("Map-ID " + this.mapId + " has an Error!");
 			}
 		}
-		Image image = this.getPicture();
-		if (image == null) {
-			FramePicturePlugin.log.warning("The Url \"" + this.getPicturePath() + "\" does not exists!");
-			return;
-		}
+		
 		//Renderer
-		MapRenderer renderer = new Renderer(0, 0, image);
 		for (MapRenderer render : view.getRenderers())
 		{
 			view.removeRenderer(render);
 		}
+		
+		Image image = this.getPicture();
+		if (image == null) {
+			FramePicturePlugin.log.warning("The Url \"" + this.getPath() + "\" does not exists!");
+			return;
+		}
+		
+		MapRenderer renderer = new Renderer(image);
 		view.addRenderer(renderer);
 	}
 
