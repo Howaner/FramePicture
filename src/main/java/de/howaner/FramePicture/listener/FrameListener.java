@@ -1,5 +1,7 @@
 package de.howaner.FramePicture.listener;
 
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -11,10 +13,12 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import de.howaner.FramePicture.FrameManager;
+import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
+import org.bukkit.Material;
 
 public class FrameListener implements Listener {
 	
@@ -33,30 +37,44 @@ public class FrameListener implements Listener {
 		Player player = event.getPlayer();
 		///CREATING
 		if (Cache.hasCacheCreating(player)) {
+			event.setCancelled(true);
 			//Money
 			if (Config.MONEY_ENABLED) {
 				if (manager.economy.getBalance(player.getName()) < Config.CREATE_PRICE) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
 					Cache.removeCacheCreating(player);
-					event.setCancelled(true);
 					return;
 				}
 			}
 			//Permission
 			if (!player.hasPermission("FramePicture.set")) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
-				event.setCancelled(true);
 				return;
 			}
-			//Frame erstellen
+			
+			//WorldGuard Check
+			if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_REGION_CHECK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+				RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
+				LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
+				if (!rm.getApplicableRegions(entity.getLocation()).canBuild(localPlayer)) {
+					player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
+					return;
+				}
+			}
+			
+			//Is a Item in the Frame?
+			if (entity.getItem() != null && entity.getItem().getType() != Material.AIR) {
+				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME_ITEM.getText());
+				return;
+			}
+			
+			//Create Frame
 			String path = Cache.getCacheCreating(player);
-			//Frame erstellen
 			if (manager.addFrame(path, entity) != null) {
 				Cache.removeCacheCreating(player);
 				player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_SET.getText().replace("%url", path));
 				if (Config.MONEY_ENABLED) manager.economy.withdrawPlayer(player.getName(), Config.CREATE_PRICE);
 			}
-			event.setCancelled(true);
 		}
 		///GETTING
 		if (Cache.hasCacheGetting(player)) {

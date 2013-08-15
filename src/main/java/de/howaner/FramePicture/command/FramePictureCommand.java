@@ -118,7 +118,8 @@ public class FramePictureCommand implements CommandExecutor {
 			manager.saveFrames();
 			//Geld
 			if (Config.MONEY_ENABLED) {
-				if (!manager.setupEconomy()) {
+				FramePicturePlugin.getPlugin().setupEconomy();
+				if (FramePicturePlugin.getEconomy() == null) {
 					FramePicturePlugin.log.info("Vault not found! Money Support disabled!");
 					Config.MONEY_ENABLED = false;
 					Config.save();

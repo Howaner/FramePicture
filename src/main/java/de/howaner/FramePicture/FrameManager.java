@@ -19,7 +19,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.RegisteredServiceProvider;
 
 import de.howaner.FramePicture.command.FramePictureCommand;
 import de.howaner.FramePicture.event.CreateFrameEvent;
@@ -57,15 +56,18 @@ public class FrameManager {
 		//Command
 		p.getCommand("FramePicture").setExecutor(new FramePictureCommand(this));
 		p.getCommand("fp").setExecutor(new FramePictureCommand(this));
+		
 		//Money
-		if (Config.MONEY_ENABLED)
-		{
-			if (!this.setupEconomy())
-			{
-				this.getLogger().info("Vault not found! Money Support disabled!");
-				Config.MONEY_ENABLED = false;
-				Config.save();
-			}
+		if (Config.MONEY_ENABLED && FramePicturePlugin.getEconomy() == null) {
+			this.getLogger().warning("Vault not found! Money Support disabled!");
+			Config.MONEY_ENABLED = false;
+			Config.save();
+		}
+		//WorldGuard
+		if (Config.WORLDGUARD_ENABLED && FramePicturePlugin.getWorldGuard() == null) {
+			this.getLogger().warning("WorldGuard not found! WorldGuard Support disabled!");
+			Config.WORLDGUARD_ENABLED = false;
+			Config.save();
 		}
 	}
 	
@@ -200,14 +202,5 @@ public class FrameManager {
 			frame.update();
 		}
 	}
-	
-	public boolean setupEconomy()
-    {
-        RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-        if (economyProvider != null) {
-            economy = economyProvider.getProvider();
-        }
-        return (economy != null);
-    }
 
 }

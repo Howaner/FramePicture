@@ -17,7 +17,6 @@ public enum Lang {
 	CLICK_FRAME("&3Please click on the Frame!"),
 	GETTING_MODE_ENABLED("&2Getting Mode enabled!"),
 	GETTING_MODE_DISABLED("&2Getting Mode disabled!"),
-	NO_SELECTION("&4No Selection!"),
 	CREATING_CANCELLED("&3Creating cancelled!"),
 	PLUGIN_RELOAD("&2Plugin reloaded!"),
 	FRAME_SET("&2Frame setting on the Url &f%url"),
@@ -25,7 +24,8 @@ public enum Lang {
 	GET_URL("&3The URL is &f%url"),
 	NO_PICTURE("&4This is not a Picture: %url"),
 	PREFIX("&7[&6FramePicture&7] &f"),
-	NOT_ENOUGH_MONEY("&4You haven't enough Money!");
+	NOT_ENOUGH_MONEY("&4You haven't enough Money!"),
+	ALREADY_FRAME_ITEM("&4In this Frame is already a Item!");
 	
 	private final String value;
 	public static YamlConfiguration config = null;

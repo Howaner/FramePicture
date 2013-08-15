@@ -1,5 +1,6 @@
 package de.howaner.FramePicture;
 
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -7,11 +8,14 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.howaner.FramePicture.util.Lang;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class FramePicturePlugin extends JavaPlugin {
 	public static Logger log;
 	private static FrameManager manager = null;
 	private static FramePicturePlugin instance;
+	private static Economy economy = null;
 	
 	@Override
 	public void onLoad() {
@@ -23,7 +27,9 @@ public class FramePicturePlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		if (log == null) log = this.getLogger();
+		if (instance == null) instance = this;
 		if (manager == null) manager = new FrameManager(this);
+		this.setupEconomy();
 		manager.onEnable();
 		log.info(Lang.PLUGIN_ENABLED.getText());
 	}
@@ -34,12 +40,25 @@ public class FramePicturePlugin extends JavaPlugin {
 		log.info(Lang.PLUGIN_DISABLED.getText());
 	}
 	
+	public void setupEconomy() {
+		RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+		if (economyProvider != null)
+            economy = economyProvider.getProvider();
+    }
+	
+	public static Economy getEconomy() {
+		return economy;
+	}
+	
+	public static WorldGuardPlugin getWorldGuard() {
+		Plugin plugin = Bukkit.getPluginManager().getPlugin("WorldGuard");
+		if (plugin != null && plugin instanceof WorldGuardPlugin)
+			return (WorldGuardPlugin)plugin;
+		else
+			return null;
+	}
+	
 	public static FramePicturePlugin getPlugin() {
-		if (instance == null) {
-			Plugin plugin = Bukkit.getPluginManager().getPlugin("FramePicture");
-			if (plugin != null && plugin instanceof FramePicturePlugin)
-				instance = (FramePicturePlugin)plugin;
-		}
 		return instance;
 	}
 	
