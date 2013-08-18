@@ -16,6 +16,7 @@ public class Config {
 	public static double CREATE_PRICE = 10.0;
 	public static boolean WORLDGUARD_ENABLED = false;
 	public static boolean WORLDGUARD_REGION_CHECK = true;
+	public static boolean FASTER_RENDERING = true;
 	//File
 	public static File configFile = new File("plugins/FramePicture/config.yml");
 	
@@ -28,6 +29,7 @@ public class Config {
 		CREATE_PRICE = config.getDouble("Money.CreatePrice");
 		WORLDGUARD_ENABLED = config.getBoolean("WorldGuard.Enabled");
 		WORLDGUARD_REGION_CHECK = config.getBoolean("WorldGuard.RegionCheck");
+		FASTER_RENDERING = config.getBoolean("FasterRendering");
 	}
 	
 	public static void save() {
@@ -39,6 +41,7 @@ public class Config {
 		config.set("Money.CreatePrice", CREATE_PRICE);
 		config.set("WorldGuard.Enabled", WORLDGUARD_ENABLED);
 		config.set("WorldGuard.RegionCheck", WORLDGUARD_REGION_CHECK);
+		config.set("FasterRendering", FASTER_RENDERING);
 		try {
 			config.save(configFile);
 		} catch (Exception e) {

@@ -66,6 +66,8 @@ public class Frame {
 		
 		MapRenderer renderer = new Renderer(image);
 		view.addRenderer(renderer);
+		
+		FramePicturePlugin.getManager().sendMap(this);
 	}
 
 }

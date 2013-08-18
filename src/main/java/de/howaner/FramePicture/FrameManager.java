@@ -28,6 +28,7 @@ import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
 import de.howaner.FramePicture.util.Utils;
+import org.bukkit.entity.Player;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
@@ -201,6 +202,29 @@ public class FrameManager {
 			this.frames.put(mapId, frame);
 			frame.update();
 		}
+	}
+	
+	public void sendMaps() {
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			this.sendMaps(player);
+		}
+	}
+	
+	public void sendMaps(Player player) {
+		for (Frame frame : this.getFrames()) {
+			this.sendMap(frame, player);
+		}
+	}
+	
+	public void sendMap(Frame frame) {
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			this.sendMap(frame, player);
+		}
+	}
+	
+	public void sendMap(Frame frame, Player player) {
+		if (!Config.FASTER_RENDERING) return;
+		player.sendMap(Bukkit.getMap(frame.getMapId()));
 	}
 
 }

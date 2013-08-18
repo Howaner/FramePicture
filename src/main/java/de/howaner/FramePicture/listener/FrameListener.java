@@ -19,6 +19,7 @@ import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
 import org.bukkit.Material;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 public class FrameListener implements Listener {
 	
@@ -111,6 +112,13 @@ public class FrameListener implements Listener {
 			ItemFrame iFrame = (ItemFrame)entity;
 			manager.removeFrame(iFrame.getItem().getDurability());
 		}
+	}
+	
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		if (!Config.FASTER_RENDERING) return;
+		Player player = event.getPlayer();
+		FramePicturePlugin.getManager().sendMaps(player);
 	}
 
 }

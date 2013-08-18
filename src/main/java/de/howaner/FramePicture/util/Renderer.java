@@ -31,7 +31,7 @@ public class Renderer extends MapRenderer {
 	}
 	
 	@Override
-	public void render(MapView view, final MapCanvas canvas, Player player) {
+	public void render(final MapView view, final MapCanvas canvas, final Player player) {
 		if (this.rendered) return;
 		this.removeCursors(canvas);
 		this.rendered = true;
@@ -40,6 +40,7 @@ public class Renderer extends MapRenderer {
 			public void run() {
 				try {
 					canvas.drawImage(0, 0, image);
+					player.sendMap(view);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
