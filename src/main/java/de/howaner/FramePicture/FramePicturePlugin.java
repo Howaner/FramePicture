@@ -41,6 +41,7 @@ public class FramePicturePlugin extends JavaPlugin {
 	}
 	
 	public void setupEconomy() {
+		if (Bukkit.getPluginManager().getPlugin("Vault") == null) return;
 		RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
 		if (economyProvider != null)
             economy = economyProvider.getProvider();
