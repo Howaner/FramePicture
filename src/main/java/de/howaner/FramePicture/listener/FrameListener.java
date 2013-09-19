@@ -19,6 +19,7 @@ import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
 import org.bukkit.Material;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 public class FrameListener implements Listener {
@@ -36,6 +37,16 @@ public class FrameListener implements Listener {
 		if (event.getRightClicked().getType() != EntityType.ITEM_FRAME) return;
 		ItemFrame entity = (ItemFrame) event.getRightClicked();
 		Player player = event.getPlayer();
+		Frame frame = manager.getFrame(entity.getItem().getDurability());
+		if (frame != null && Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_ROTATE_FRAME && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+			RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
+			LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
+			if (!rm.getApplicableRegions(entity.getLocation()).canBuild(localPlayer)) {
+				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
+				event.setCancelled(true);
+				return;
+			}
+		}
 		///CREATING
 		if (Cache.hasCacheCreating(player)) {
 			event.setCancelled(true);
@@ -54,7 +65,7 @@ public class FrameListener implements Listener {
 			}
 			
 			//WorldGuard Check
-			if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_REGION_CHECK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+			if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BUILD && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
 				RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 				LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
 				if (!rm.getApplicableRegions(entity.getLocation()).canBuild(localPlayer)) {
@@ -64,7 +75,7 @@ public class FrameListener implements Listener {
 			}
 			
 			//Is a Item in the Frame?
-			if (entity.getItem() != null && entity.getItem().getType() != Material.AIR) {
+			if (frame != null || (entity.getItem() != null && entity.getItem().getType() != Material.AIR)) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME_ITEM.getText());
 				return;
 			}
@@ -85,7 +96,6 @@ public class FrameListener implements Listener {
 				return;
 			}
 			//Frame
-			Frame frame = manager.getFrame(entity.getItem().getDurability());
 			if (frame == null) {
 				player.sendMessage(Lang.NO_FRAMEPICTURE.getText());
 				return;
@@ -110,6 +120,21 @@ public class FrameListener implements Listener {
 		if (manager.isFramePicture(entity))
 		{
 			ItemFrame iFrame = (ItemFrame)entity;
+			if (event instanceof HangingBreakByEntityEvent) {
+				if (((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
+					Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();
+					//WorldGuard Check
+					if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BUILD && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+						RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
+						LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
+						if (!rm.getApplicableRegions(entity.getLocation()).canBuild(localPlayer)) {
+							player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
+							event.setCancelled(true);
+							return;
+						}
+					}
+				}
+			}
 			manager.removeFrame(iFrame.getItem().getDurability());
 		}
 	}
