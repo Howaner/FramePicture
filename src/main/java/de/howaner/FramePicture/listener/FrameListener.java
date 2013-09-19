@@ -124,7 +124,7 @@ public class FrameListener implements Listener {
 				if (((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
 					Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();
 					//WorldGuard Check
-					if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BUILD && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+					if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
 						RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 						LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
 						if (!rm.getApplicableRegions(entity.getLocation()).canBuild(localPlayer)) {
