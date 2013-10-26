@@ -1,0 +1,20 @@
+# The Messages from FramePicture.
+PLUGIN_ENABLED: Plugin zapnut!
+PLUGIN_DISABLED: Plugin vypnut!
+NO_PLAYER: '&4Ty nejsi hrac!'
+NO_PERMISSION: '&4Nemas povoleni!'
+ALREADY_SELECTION: '&4Tam uz obrazek je!'
+CLICK_FRAME: '&3Prosim klikni na frame!'
+GETTING_MODE_ENABLED: '&2Ziskavaci mod zapnut!'
+GETTING_MODE_DISABLED: '&2Ziskavaci mod vypnut!'
+CREATING_CANCELLED: '&3Vytvareni zruseno!'
+PLUGIN_RELOAD: '&2Plugin byl znovu nacten!'
+FRAME_SET: '&2 Frame nastaven na Url &f%url'
+NO_FRAMEPICTURE: '&4Tohle neni frame picture!'
+GET_URL: '&3URL je &f%url'
+NO_PICTURE: '&4Tohle neni obrazek: %url'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4Nemas dost penez!'
+PLEASE_WAIT: '&7čekejte prosím'
+FRAME_REMOVED: '&3Rám odstraněny'
+ALREADY_FRAME_ITEM: '&4In this Frame is already a Item!'

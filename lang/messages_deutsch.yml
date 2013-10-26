@@ -1,17 +1,24 @@
 # The Messages from FramePicture.
-PLUGIN_ENABLED: Plugin gestartet!
-PLUGIN_DISABLED: Plugin gestoppt!
+PLUGIN_ENABLED: 'Plugin gestartet!'
+PLUGIN_DISABLED: 'Plugin gestoppt!'
 NO_PLAYER: '&4Sie sind kein Spieler!'
 NO_PERMISSION: '&4Keine Rechte!'
 ALREADY_SELECTION: '&4Sie haben bereits eine Auswahl!'
 CLICK_FRAME: '&3Bitte klicken sie auf den Rahmen!'
 GETTING_MODE_ENABLED: '&2Der Bildmodus wurde aktiviert. Bitte klicken sie auf einen Rahmen!'
 GETTING_MODE_DISABLED: '&2Der Bildmodus wurde deaktiviert!'
-CREATING_CANCELLED: '&3Erstellen abgebrochen!'
-PLUGIN_RELOAD: '&2Plugin neu geladen!'
-FRAME_SET: '&2Das Bild %url wurde in den Rahmen gesetzt!'
+CREATING_CANCELLED: '&3Erstellung abgebrochen!'
+PLUGIN_RELOAD: '&2Das Plugin wurde neu geladen!'
+FRAME_SET: '&2Bild mit ID &7#%id&2 erstellt!'
 NO_FRAMEPICTURE: '&4In diesem Rahmen ist kein Bild!'
-GET_URL: '&3Die URL des Bildes ist &f%url'
-NO_PICTURE: '&3%url ist kein Bild oder existiert nicht!'
+GET_URL: '&3Bildinformationen:
+
+  &fID: &7#%id
+
+  &fURL: &7%url'
+NO_PICTURE: '&3Diese Url enthält kein Bild.'
 PREFIX: '&7[&6FramePicture&7] &f'
 NOT_ENOUGH_MONEY: '&4Sie haben nicht genug Geld!'
+PLEASE_WAIT: '&7Bitte warten...'
+FRAME_REMOVED: '&3Bild gelöscht!'
+ALREADY_FRAME_ITEM: '&4Dieser Rahmen ist nicht leer!'

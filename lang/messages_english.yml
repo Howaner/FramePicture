@@ -9,9 +9,16 @@ GETTING_MODE_ENABLED: '&2Getting Mode enabled!'
 GETTING_MODE_DISABLED: '&2Getting Mode disabled!'
 CREATING_CANCELLED: '&3Creating cancelled!'
 PLUGIN_RELOAD: '&2Plugin reloaded!'
-FRAME_SET: '&2Frame setting on the Url &f%url'
+FRAME_SET: '&2Frame with ID &7#%id&2 created!'
 NO_FRAMEPICTURE: '&4This is not a Frame Picture!'
-GET_URL: '&3The URL is &f%url'
+GET_URL: '&3Infos from Frame:
+
+  &fID: &7#%id
+
+  &fURL: &7%url'
 NO_PICTURE: '&4This is not a Picture: %url'
 PREFIX: '&7[&6FramePicture&7] &f'
 NOT_ENOUGH_MONEY: '&4You haven''t enough Money!'
+PLEASE_WAIT: '&7Please wait..'
+FRAME_REMOVED: '&3Frame removed!'
+ALREADY_FRAME_ITEM: '&4In this Frame is already a Item!'
