@@ -10,8 +10,8 @@ import de.howaner.FramePicture.FramePicturePlugin;
 public class Config {
 	
 	public static boolean CHANGE_SIZE_ENABLED = true;
-	public static int SIZE_WIDTH = 134;
-	public static int SIZE_HEIGHT = 134;
+	public static int SIZE_WIDTH = 130;
+	public static int SIZE_HEIGHT = 130;
 	public static boolean MONEY_ENABLED = false;
 	public static double CREATE_PRICE = 10.0;
 	public static boolean WORLDGUARD_ENABLED = false;
@@ -51,7 +51,8 @@ public class Config {
 		try {
 			config.save(configFile);
 		} catch (Exception e) {
-			FramePicturePlugin.log.log(Level.WARNING, "Fehler beim Speichern der Konfiguration!");
+			FramePicturePlugin.log.log(Level.WARNING, "Error while saving the Config!");
+			e.printStackTrace();
 		}
 	}
 

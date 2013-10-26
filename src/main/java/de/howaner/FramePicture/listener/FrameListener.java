@@ -37,7 +37,7 @@ public class FrameListener implements Listener {
 		if (event.getRightClicked().getType() != EntityType.ITEM_FRAME) return;
 		ItemFrame entity = (ItemFrame) event.getRightClicked();
 		Player player = event.getPlayer();
-		Frame frame = manager.getFrame(entity.getItem().getDurability());
+		Frame frame = (entity.getItem() != null) ? manager.getFrame(entity.getItem().getDurability()) : null;
 		if (frame != null && Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_ROTATE_FRAME && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
 			RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 			LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
@@ -75,16 +75,17 @@ public class FrameListener implements Listener {
 			}
 			
 			//Is a Item in the Frame?
-			if (frame != null || (entity.getItem() != null && entity.getItem().getType() != Material.AIR)) {
+			if (frame != null || entity.getItem() != null) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME_ITEM.getText());
 				return;
 			}
 			
 			//Create Frame
 			String path = Cache.getCacheCreating(player);
-			if (manager.addFrame(path, entity) != null) {
+			frame = manager.addFrame(path, entity);
+			if (frame != null) {
 				Cache.removeCacheCreating(player);
-				player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_SET.getText().replace("%url", path));
+				player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_SET.getText().replace("%url", path).replace("%id", frame.getMapId().toString()));
 				if (Config.MONEY_ENABLED) manager.economy.withdrawPlayer(player.getName(), Config.CREATE_PRICE);
 			}
 		}
@@ -100,7 +101,7 @@ public class FrameListener implements Listener {
 				player.sendMessage(Lang.NO_FRAMEPICTURE.getText());
 				return;
 			}
-			player.sendMessage(Lang.PREFIX.getText() + Lang.GET_URL.getText().replace("%url", frame.getPath()));
+			player.sendMessage(Lang.PREFIX.getText() + Lang.GET_URL.getText().replace("%url", frame.getPath()).replace("%id", frame.getMapId().toString()));
 			event.setCancelled(true);
 			Cache.removeCacheGetting(player);
 		}

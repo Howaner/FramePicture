@@ -1,5 +1,5 @@
 name: FramePicture
-version: 1.3.9
+version: 1.4
 author: Howaner
 website: http://howaner.de
 description: You can set Pictures in Frames
@@ -25,13 +25,13 @@ permissions:
       FramePicture.ignoreWorldGuard: true
     default: op
   FramePicture.set:
-    description: Place a Picture in a Frame
+    description: Permission to place a Picture in a Frame
     default: true
   FramePicture.get:
-    description: Get the Url from a Frame with a Picture
+    description: Permission to show Infos from a Frame
     default: true
   FramePicture.reload:
-    description: Reload the Config
+    description: Permission to reload the FramePicture config
     default: op
   FramePicture.ignoreWorldGuard:
     description: Ignore WorldGuard Check

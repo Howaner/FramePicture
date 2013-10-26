@@ -11,6 +11,7 @@ public class CreateFrameEvent extends Event implements Cancellable {
 	private final Frame frame;
 	private final ItemFrame entity;
 	private boolean cancelled = false;
+	private static HandlerList handlerList = new HandlerList();
 	
 	public CreateFrameEvent(Frame frame, ItemFrame entity) {
 		this.frame = frame;
@@ -37,7 +38,11 @@ public class CreateFrameEvent extends Event implements Cancellable {
 	
 	@Override
 	public HandlerList getHandlers() {
-		return new HandlerList();
+		return handlerList;
+	}
+	
+	public static HandlerList getHandlerList() {
+		return handlerList;
 	}
 
 }

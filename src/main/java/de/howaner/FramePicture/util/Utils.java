@@ -3,10 +3,14 @@ package de.howaner.FramePicture.util;
 import java.awt.Image;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.map.MapView;
 
 public class Utils {
@@ -14,6 +18,16 @@ public class Utils {
 	
 	public static void checkFolder() {
 		if (!imageFolder.exists()) imageFolder.mkdirs();
+	}
+	
+	public static List<ItemFrame> getFrameEntitys(short id) {
+		List<ItemFrame> frameList = new ArrayList<ItemFrame>();
+		for (ItemFrame frame : Bukkit.getWorlds().get(0).getEntitiesByClass(ItemFrame.class)) {
+			if (frame.getItem() == null || frame.getItem().getType() != Material.MAP) continue;
+			if (frame.getItem().getDurability() == id)
+				frameList.add(frame);
+		}
+		return frameList;
 	}
 	
 	public static Image getPicture(String picture) throws Exception {
@@ -51,16 +65,6 @@ public class Utils {
 	public static short createMapId() {
 		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0));
 		return view.getId();
-	}
-	
-	public static MapView generateMap(short id) {
-		MapView view = Bukkit.getMap(id);
-		if (view != null) return view;
-		while (true) {
-			view = Bukkit.createMap(Bukkit.getWorlds().get(0));
-			if (view.getId() == id) return view;
-			if (view.getId() > id) return null;
-		}
 	}
 
 }

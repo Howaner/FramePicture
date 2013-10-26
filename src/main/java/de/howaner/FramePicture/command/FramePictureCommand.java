@@ -126,9 +126,8 @@ public class FramePictureCommand implements CommandExecutor {
 				}
 			}
 			//Frames updaten
-			for (Frame frame : manager.getFrames()) {
+			for (Frame frame : manager.getFrames())
 				frame.update();
-			}
 			Lang.load();
 			manager.getLogger().info("Plugin reloaded!");
 			sender.sendMessage(Lang.PREFIX.getText() + Lang.PLUGIN_RELOAD.getText());
@@ -138,10 +137,10 @@ public class FramePictureCommand implements CommandExecutor {
 	}
 	
 	public boolean sendHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.BLUE + "--- " + ChatColor.GREEN + "Help from /FramePicture " + ChatColor.BLUE + "---");
-		sender.sendMessage("/FramePicture set <URL>  " + ChatColor.GOLD + "-" + ChatColor.WHITE + "   Set a Picture in a Frame.");
-		sender.sendMessage("/FramePicture get   " + ChatColor.GOLD + "-" + ChatColor.WHITE + "   Get the Url from a Picture");
-		sender.sendMessage("/FramePicture reload   " + ChatColor.GOLD + "-" + ChatColor.WHITE + "   Reload the Config.");
+		sender.sendMessage(ChatColor.GREEN + "Help from /FramePicture or /fp:");
+		sender.sendMessage("/FramePicture set <URL>  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Set a Picture in a Frame.");
+		sender.sendMessage("/FramePicture get  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Get the Url from a Picture");
+		sender.sendMessage("/FramePicture reload  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Reload the Config.");
 		return true;
 	}
 

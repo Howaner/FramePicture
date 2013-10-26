@@ -13,7 +13,6 @@ import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -52,6 +51,7 @@ public class FrameManager {
 		//Load Frames
 		Utils.checkFolder();
 		this.loadFrames();
+		this.saveFrames();
 		//Listener
 		Bukkit.getPluginManager().registerEvents(new FrameListener(this), this.p);
 		//Command
@@ -70,6 +70,8 @@ public class FrameManager {
 			Config.WORLDGUARD_ENABLED = false;
 			Config.save();
 		}
+		
+		this.sendMaps();
 	}
 	
 	public void onDisable() {
@@ -110,8 +112,7 @@ public class FrameManager {
 		//Event
 		RemoveFrameEvent customEvent = new RemoveFrameEvent(frame);
 		Bukkit.getPluginManager().callEvent(customEvent);
-		if (customEvent.isCancelled())
-			return false;
+		if (customEvent.isCancelled()) return false;
 		
 		//Delete Picture
 		MapView view = Bukkit.getMap(frame.getMapId());
@@ -129,8 +130,7 @@ public class FrameManager {
 		//Event
 		CreateFrameEvent customEvent = new CreateFrameEvent(frame, entity);
 		Bukkit.getPluginManager().callEvent(customEvent);
-		if (customEvent.isCancelled())
-			return null;
+		if (customEvent.isCancelled()) return null;
 		
 		this.frames.put(frame.getMapId(), frame);
 		frame.update();
@@ -153,25 +153,16 @@ public class FrameManager {
 	/* Load Frames */
 	public void loadFrames() {
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(framesFile);
+		this.frames.clear();
 		for (String key : config.getKeys(false)) {
-			if (key.startsWith("Frame")) {
-				this.getLogger().info("You have a old Frames File Version!");
-				this.getLogger().info("A Update is in Progress..");
-				this.loadOldFrames();
-				this.saveFrames();
-				this.loadFrames();
-				this.getLogger().info("Update finished!");
-				return;
-			}
-			Short mapId = Short.parseShort(key);
-			if (mapId == null)
-				continue;
+			short mapId = Short.parseShort(key);
 			String path = config.getString(key);
 			//Set Frame
 			Frame frame = new Frame(path, mapId);
 			this.frames.put(mapId, frame);
 			frame.update();
 		}
+		this.getLogger().info("Loaded " + this.frames.size() + " Frames!");
 	}
 	
 	/* Save Frames */
@@ -184,47 +175,34 @@ public class FrameManager {
 			config.save(framesFile);
 		} catch (Exception e) {
 			FramePicturePlugin.log.log(Level.WARNING, "Error while saving the Frames!");
-		}
-	}
-	
-	/* Update Frames */
-	public void loadOldFrames() {
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(framesFile);
-		for (String key : config.getKeys(false))
-		{
-			//Load
-			ConfigurationSection section = config.getConfigurationSection(key);
-			String path = section.getString("URL");
-			if (!Utils.isImage(path)) continue;
-			short mapId = Short.parseShort(section.getString("MapID"));
-			//Set Frame
-			Frame frame = new Frame(path, mapId);
-			this.frames.put(mapId, frame);
-			frame.update();
+			e.printStackTrace();
 		}
 	}
 	
 	public void sendMaps() {
-		for (Player player : Bukkit.getOnlinePlayers()) {
+		for (Player player : Bukkit.getOnlinePlayers())
 			this.sendMaps(player);
-		}
 	}
 	
 	public void sendMaps(Player player) {
-		for (Frame frame : this.getFrames()) {
+		for (Frame frame : this.getFrames())
 			this.sendMap(frame, player);
-		}
 	}
 	
 	public void sendMap(Frame frame) {
-		for (Player player : Bukkit.getOnlinePlayers()) {
+		for (Player player : Bukkit.getOnlinePlayers())
 			this.sendMap(frame, player);
-		}
 	}
 	
-	public void sendMap(Frame frame, Player player) {
+	public void sendMap(Frame frame, final Player player) {
 		if (!Config.FASTER_RENDERING) return;
-		player.sendMap(Bukkit.getMap(frame.getMapId()));
+		final MapView view = Bukkit.getMap(frame.getMapId());
+		if (view == null || view.getRenderers().isEmpty()) return;
+		new Thread() {
+			public void run() {
+				player.sendMap(view);
+			}
+		}.start();
 	}
 
 }

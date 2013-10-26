@@ -1,35 +1,37 @@
 package de.howaner.FramePicture.event;
 
-import org.bukkit.event.Cancellable;
+import de.howaner.FramePicture.util.Frame;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import de.howaner.FramePicture.util.Frame;
-
-public class RemoveFrameEvent extends Event implements Cancellable {
+public class ChangeFrameIdEvent extends Event {
 	private Frame frame;
-	private boolean cancelled = false;
+	private short oldId;
+	private short newId;
 	private static HandlerList handlerList = new HandlerList();
 	
-	public RemoveFrameEvent(Frame frame) {
+	public ChangeFrameIdEvent(Frame frame, short oldId, short newId) {
 		this.frame = frame;
+		this.oldId = oldId;
+		this.newId = newId;
 	}
 	
 	public Frame getFrame() {
 		return this.frame;
 	}
 	
-	@Override
-	public boolean isCancelled() {
-		return this.cancelled;
+	public short getOldId() {
+		return this.oldId;
 	}
 	
-	@Override
-	public void setCancelled(boolean cancelled) {
-		this.cancelled = cancelled;
+	public short getNewId() {
+		return this.newId;
 	}
 	
-	@Override
+	public void setNewId(short newId) {
+		this.newId = newId;
+	}
+	
 	public HandlerList getHandlers() {
 		return handlerList;
 	}
@@ -37,5 +39,5 @@ public class RemoveFrameEvent extends Event implements Cancellable {
 	public static HandlerList getHandlerList() {
 		return handlerList;
 	}
-
+	
 }
