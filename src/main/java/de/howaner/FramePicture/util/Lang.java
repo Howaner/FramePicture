@@ -25,6 +25,8 @@ public enum Lang {
 	NO_PICTURE("&4This is not a Picture: %url"),
 	PREFIX("&7[&6FramePicture&7] &f"),
 	NOT_ENOUGH_MONEY("&4You haven't enough Money!"),
+	PLEASE_WAIT("&7Please wait.."),
+	FRAME_REMOVED("&3Frame removed!"),
 	ALREADY_FRAME_ITEM("&4In this Frame is already a Item!");
 	
 	private final String value;

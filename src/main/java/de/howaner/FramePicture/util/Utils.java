@@ -1,5 +1,6 @@
 package de.howaner.FramePicture.util;
 
+import de.howaner.FramePicture.FramePicturePlugin;
 import java.awt.Image;
 import java.io.File;
 import java.net.URL;
@@ -59,6 +60,18 @@ public class Utils {
 			return true;
 		} catch (Exception e) {
 			return false;
+		}
+	}
+	
+	public static void removeMapFile(short id) {
+		try {
+			File worldFolder = new File(Bukkit.getWorlds().get(0).getName());
+			File dataFolder = new File(worldFolder, "data");
+			File mapFile = new File(dataFolder, "map_" + id + ".dat");
+			if (mapFile.exists())
+				mapFile.delete();
+		} catch (Exception e) {
+			FramePicturePlugin.log.warning("Can't remove the Map Data from #" + id);
 		}
 	}
 	

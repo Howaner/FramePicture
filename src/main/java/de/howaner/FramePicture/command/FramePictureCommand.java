@@ -34,7 +34,7 @@ public class FramePictureCommand implements CommandExecutor {
 				sender.sendMessage(Lang.PREFIX.getText() + Lang.NO_PLAYER.getText());
 				return true;
 			}
-			Player player = (Player)sender;
+			final Player player = (Player)sender;
 			//Permission
 			if (!player.hasPermission("FramePicture.set")) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
@@ -62,13 +62,18 @@ public class FramePictureCommand implements CommandExecutor {
 				}
 			}
 			//Erstellung
-			String path = args[1];
-			if (!Utils.isImage(path)) {
-				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
-				return true;
-			}
-			Cache.setCacheCreating(player, path);
-			player.sendMessage(Lang.PREFIX.getText() + Lang.CLICK_FRAME.getText());
+			final String path = args[1];
+			player.sendMessage(Lang.PREFIX.getText() + Lang.PLEASE_WAIT.getText());
+			new Thread() {
+				public void run() {
+					if (!Utils.isImage(path)) {
+						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
+						return;
+					}
+					Cache.setCacheCreating(player, path);
+					player.sendMessage(Lang.PREFIX.getText() + Lang.CLICK_FRAME.getText());
+				}
+			}.start();
 			return true;
 		}
 		///GET

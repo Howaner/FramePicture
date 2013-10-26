@@ -18,7 +18,6 @@ import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
-import org.bukkit.Material;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -75,7 +74,7 @@ public class FrameListener implements Listener {
 			}
 			
 			//Is a Item in the Frame?
-			if (frame != null || entity.getItem() != null) {
+			if (frame != null && entity.getItem() != null) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME_ITEM.getText());
 				return;
 			}
@@ -137,6 +136,10 @@ public class FrameListener implements Listener {
 				}
 			}
 			manager.removeFrame(iFrame.getItem().getDurability());
+			if (event instanceof HangingBreakByEntityEvent && ((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
+				Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();
+				player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_REMOVED.getText());
+			}
 		}
 	}
 	

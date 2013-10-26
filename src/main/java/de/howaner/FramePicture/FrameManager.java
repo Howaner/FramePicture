@@ -121,6 +121,7 @@ public class FrameManager {
 		}
 		
 		this.frames.remove(mapId);
+		Utils.removeMapFile(mapId);
 		this.saveFrames();
 		return true;
 	}
