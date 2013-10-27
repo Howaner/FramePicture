@@ -1,0 +1,22 @@
+# The Messages from FramePicture.
+PLUGIN_ENABLED: Plugin habilitado!
+PLUGIN_DISABLED: Plugin desabilitado!
+NO_PLAYER: '&4Você não é um jogador!'
+NO_PERMISSION: '&4Sem permissão!'
+ALREADY_SELECTION: '&4Você já tem uma Seleção!'
+CLICK_FRAME: '&3Por favor clique na moldura!'
+GETTING_MODE_ENABLED: '&2Modo de pegar habilitado!'
+GETTING_MODE_DISABLED: '&2Modo de pegar desabilitado!'
+CREATING_CANCELLED: '&3Criação cancelada!'
+PLUGIN_RELOAD: '&2Plugin recarregado!'
+FRAME_SET: '&2Moldura com ID &7#%id&2 criada!'
+NO_FRAMEPICTURE: '&4Esta não é uma moldura com imagem!'
+GET_URL: '&3Informações da Moldura:
+
+  &fID: &7#%id
+
+  &fURL: &7%url'
+NO_PICTURE: '&4Isto não é uma imagem: %url'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4Você não tem dinheiro suficiente!'
+ALREADY_FRAME_ITEM: '&4Nessa moldura já existe um item!'
