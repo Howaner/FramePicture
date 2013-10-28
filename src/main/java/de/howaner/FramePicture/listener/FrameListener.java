@@ -18,7 +18,6 @@ import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
-import org.bukkit.Material;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -74,7 +73,8 @@ public class FrameListener implements Listener {
 				}
 			}
 			
-			if (frame != null) {
+			//Is a Item in the Frame?
+			if (frame != null && entity.getItem() != null) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME_ITEM.getText());
 				return;
 			}
