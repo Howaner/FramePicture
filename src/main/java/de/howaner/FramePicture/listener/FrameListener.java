@@ -74,7 +74,7 @@ public class FrameListener implements Listener {
 			}
 			
 			//Is a Item in the Frame?
-			if (frame != null && entity.getItem() != null) {
+			if (frame != null) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME_ITEM.getText());
 				return;
 			}
