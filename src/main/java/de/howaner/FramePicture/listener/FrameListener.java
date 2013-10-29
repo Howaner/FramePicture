@@ -117,8 +117,7 @@ public class FrameListener implements Listener {
 	public void onHangingBreak(HangingBreakEvent event) {
 		if (event.isCancelled()) return;
 		Entity entity = event.getEntity();
-		if (manager.isFramePicture(entity))
-		{
+		if (manager.isFramePicture(entity)) {
 			ItemFrame iFrame = (ItemFrame)entity;
 			if (event instanceof HangingBreakByEntityEvent) {
 				if (((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
@@ -135,7 +134,9 @@ public class FrameListener implements Listener {
 					}
 				}
 			}
-			manager.removeFrame(iFrame.getItem().getDurability());
+			short id = iFrame.getItem().getDurability();
+			iFrame.setItem(null);
+			manager.removeFrame(id);
 			if (event instanceof HangingBreakByEntityEvent && ((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
 				Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();
 				player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_REMOVED.getText());
