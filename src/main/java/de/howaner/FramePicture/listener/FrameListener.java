@@ -18,8 +18,10 @@ import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
+import org.bukkit.Material;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class FrameListener implements Listener {
 	
@@ -51,7 +53,7 @@ public class FrameListener implements Listener {
 			event.setCancelled(true);
 			//Money
 			if (Config.MONEY_ENABLED) {
-				if (manager.economy.getBalance(player.getName()) < Config.CREATE_PRICE) {
+				if (FramePicturePlugin.getEconomy().getBalance(player.getName()) < Config.CREATE_PRICE) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
 					Cache.removeCacheCreating(player);
 					return;
@@ -85,7 +87,7 @@ public class FrameListener implements Listener {
 			if (frame != null) {
 				Cache.removeCacheCreating(player);
 				player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_SET.getText().replace("%url", path).replace("%id", frame.getMapId().toString()));
-				if (Config.MONEY_ENABLED) manager.economy.withdrawPlayer(player.getName(), Config.CREATE_PRICE);
+				if (Config.MONEY_ENABLED) FramePicturePlugin.getEconomy().withdrawPlayer(player.getName(), Config.CREATE_PRICE);
 			}
 		}
 		///GETTING
@@ -135,7 +137,7 @@ public class FrameListener implements Listener {
 				}
 			}
 			short id = iFrame.getItem().getDurability();
-			iFrame.setItem(null);
+			iFrame.setItem(new ItemStack(Material.AIR));
 			manager.removeFrame(id);
 			if (event instanceof HangingBreakByEntityEvent && ((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
 				Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();

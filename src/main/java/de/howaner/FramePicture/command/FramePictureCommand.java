@@ -56,7 +56,7 @@ public class FramePictureCommand implements CommandExecutor {
 			}
 			//Money
 			if (Config.MONEY_ENABLED) {
-				if (manager.economy.getBalance(player.getName()) < Config.CREATE_PRICE) {
+				if (!FramePicturePlugin.getEconomy().has(player.getName(), Config.CREATE_PRICE)) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
 					return true;
 				}

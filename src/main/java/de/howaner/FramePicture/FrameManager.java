@@ -35,7 +35,6 @@ public class FrameManager {
 	public FramePicturePlugin p;
 	public static File framesFile = new File("plugins/FramePicture/frames.yml");
 	private Map<Short, Frame> frames = new HashMap<Short, Frame>();
-	public Economy economy;
 	
 	public FrameManager(FramePicturePlugin plugin) {
 		this.p = plugin;

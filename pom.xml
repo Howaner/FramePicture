@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.howaner</groupId>
 	<artifactId>FramePicture</artifactId>
-	<version>1.4.3</version>
+	<version>1.4.4</version>
 	<name>FramePicture</name>
 	<description>You can set Pictures in a Frame</description>
 	<packaging>jar</packaging>
@@ -17,8 +17,8 @@
 			<url>http://repo.bukkit.org/content/groups/public/</url>
 		</repository>
 		<repository>
-			<id>Comphenix Repo</id>
-			<url>http://repo.comphenix.net/content/groups/public</url>
+			<id>vault-repo</id>
+			<url>http://ci.herocraftonline.com/plugin/repository/everything</url>
 		</repository>
 		<repository>
 			<id>sk89q Repo</id>
@@ -68,12 +68,12 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.6.4-R1.0</version>
+			<version>1.6.4-R1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
 			<artifactId>Vault</artifactId>
-			<version>1.2.22</version>
+			<version>1.2.27</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sk89q</groupId>
