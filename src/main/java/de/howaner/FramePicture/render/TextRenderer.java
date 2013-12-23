@@ -1,13 +1,9 @@
-package de.howaner.FramePicture.util;
+package de.howaner.FramePicture.render;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapCanvas;
-import org.bukkit.map.MapFont;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 

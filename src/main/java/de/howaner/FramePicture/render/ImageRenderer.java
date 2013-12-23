@@ -1,4 +1,4 @@
-package de.howaner.FramePicture.util;
+package de.howaner.FramePicture.render;
 
 import java.awt.Image;
 
@@ -7,12 +7,14 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
-public class Renderer extends MapRenderer {
+public class ImageRenderer extends MapRenderer {
 	
 	private final Image image;
 	private boolean rendered = false;
+	public int imageX = 0;
+	public int imageY = 0;
 	
-	public Renderer(Image image) {
+	public ImageRenderer(Image image) {
 		this.image = image;
 	}
 	
@@ -39,7 +41,7 @@ public class Renderer extends MapRenderer {
 			@Override
 			public void run() {
 				try {
-					canvas.drawImage(0, 0, image);
+					canvas.drawImage(ImageRenderer.this.imageX, ImageRenderer.this.imageY, ImageRenderer.this.image);
 					player.sendMap(view);
 				} catch (Exception e) {
 					e.printStackTrace();

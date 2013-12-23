@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -59,13 +57,13 @@ public class FrameManager {
 		
 		//Money
 		if (Config.MONEY_ENABLED && FramePicturePlugin.getEconomy() == null) {
-			this.getLogger().warning("Vault not found! Money Support disabled!");
+			this.getLogger().warning("Vault not found. Money Support disabled!");
 			Config.MONEY_ENABLED = false;
 			Config.save();
 		}
 		//WorldGuard
 		if (Config.WORLDGUARD_ENABLED && FramePicturePlugin.getWorldGuard() == null) {
-			this.getLogger().warning("WorldGuard not found! WorldGuard Support disabled!");
+			this.getLogger().warning("WorldGuard not found. WorldGuard Support disabled!");
 			Config.WORLDGUARD_ENABLED = false;
 			Config.save();
 		}
@@ -120,7 +118,7 @@ public class FrameManager {
 		}
 		
 		this.frames.remove(mapId);
-		Utils.removeMapFile(mapId);
+		//Utils.removeMapFile(mapId);
 		this.saveFrames();
 		return true;
 	}

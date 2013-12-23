@@ -27,7 +27,7 @@ public enum Lang {
 	NOT_ENOUGH_MONEY("&4You haven't enough Money!"),
 	PLEASE_WAIT("&7Please wait.."),
 	FRAME_REMOVED("&3Frame removed!"),
-	ALREADY_FRAME_ITEM("&4In this Frame is already a Item!");
+	ALREADY_FRAME("&4This is already a Frame Picture!");
 	
 	private final String value;
 	public static YamlConfiguration config = null;

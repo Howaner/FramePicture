@@ -1,5 +1,7 @@
 package de.howaner.FramePicture.util;
 
+import de.howaner.FramePicture.render.ImageRenderer;
+import de.howaner.FramePicture.render.TextRenderer;
 import java.awt.Image;
 
 import org.bukkit.Bukkit;
@@ -8,6 +10,7 @@ import org.bukkit.map.MapView;
 
 import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.event.ChangeFrameIdEvent;
+import java.awt.image.BufferedImage;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.ItemStack;
 
@@ -34,14 +37,16 @@ public class Frame {
 		this.update();
 	}
 	
-	public Image getPicture() {
+	public BufferedImage getPicture() {
 		try {
-			Image image = Utils.getPicture(this.getPath());
+			BufferedImage image = Utils.getPicture(this.getPath());
 			if (image == null) return null;
-			if (Config.CHANGE_SIZE_ENABLED)
-				image = image.getScaledInstance(Config.SIZE_WIDTH, Config.SIZE_HEIGHT, Image.SCALE_DEFAULT);
+			if (Config.CHANGE_SIZE_ENABLED) {
+				image = Utils.scaleImage(image, Config.SIZE_WIDTH, Config.SIZE_HEIGHT);
+			}
 			return image;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -73,14 +78,21 @@ public class Frame {
 		new Thread() {
 			@Override
 			public void run() {
-				Image image = Frame.this.getPicture();
+				BufferedImage image = Frame.this.getPicture();
 				if (image == null) {
 					FramePicturePlugin.log.warning("The Url \"" + Frame.this.getPath() + "\" from Frame #" + Frame.this.getMapId().toString() + " does not exists!");
-					view2.addRenderer(new TextRenderer("Can't open Image!", Frame.this.getMapId()));
+					view2.addRenderer(new TextRenderer("Can't read Image!", Frame.this.getMapId()));
 					return;
 				}
 				
-				MapRenderer renderer = new Renderer(image);
+				ImageRenderer renderer = new ImageRenderer(image);
+				if (Config.CHANGE_SIZE_ENABLED && Config.SIZE_CENTER) {
+					
+					if (image.getWidth() < 128)
+						renderer.imageX = (128 - image.getWidth()) / 2;
+					if (image.getHeight() < 128)
+						renderer.imageY = (128 - image.getHeight()) / 2;
+				}
 				view2.addRenderer(renderer);
 				
 				FramePicturePlugin.getManager().sendMap(Frame.this);

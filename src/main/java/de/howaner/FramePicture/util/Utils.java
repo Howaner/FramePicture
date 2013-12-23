@@ -1,7 +1,12 @@
 package de.howaner.FramePicture.util;
 
 import de.howaner.FramePicture.FramePicturePlugin;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,8 +36,8 @@ public class Utils {
 		return frameList;
 	}
 	
-	public static Image getPicture(String picture) throws Exception {
-		Image image;
+	public static BufferedImage getPicture(String picture) throws Exception {
+		BufferedImage image;
 		if (picture.startsWith("http://") || picture.startsWith("https://") || picture.startsWith("ftp://")) {
 			URL url = new URL(picture);
 			try {
@@ -63,7 +68,25 @@ public class Utils {
 		}
 	}
 	
-	public static void removeMapFile(short id) {
+	public static BufferedImage scaleImage(BufferedImage image, int width, int height) {
+		if (Config.SIZE_CENTER && image.getWidth() < width && image.getHeight() < height) return image;
+		if (image.getWidth() == width && image.getHeight() == height) return image;
+		float ratio = ((float)image.getHeight()) / image.getWidth();
+		int newWidth = width;
+		int newHeight = (int) (newWidth * ratio);
+		if (newHeight > height) {
+			newHeight = height;
+			newWidth = (int) (newHeight / ratio);
+		}
+		BufferedImage resized = new BufferedImage(newWidth, newHeight, image.getType());
+		Graphics2D g = resized.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(image, 0, 0, newWidth, newHeight, 0, 0, image.getWidth(), image.getHeight(), null);
+		g.dispose();
+		return resized;
+	}
+	
+	/*public static void removeMapFile(short id) {
 		try {
 			File worldFolder = new File(Bukkit.getWorlds().get(0).getName());
 			File dataFolder = new File(worldFolder, "data");
@@ -73,7 +96,7 @@ public class Utils {
 		} catch (Exception e) {
 			FramePicturePlugin.log.warning("Can't remove the Map Data from #" + id);
 		}
-	}
+	}*/
 	
 	public static short createMapId() {
 		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0));
