@@ -26,6 +26,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class FrameListener implements Listener {
 	
@@ -147,6 +149,21 @@ public class FrameListener implements Listener {
 					event.setCancelled(true);
 				}
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerPickupItem(PlayerPickupItemEvent event) {
+		if (event.isCancelled()) return;
+		Player player = event.getPlayer();
+		ItemStack item = event.getItem().getItemStack();
+		if (item.getType() != Material.MAP) return;
+		
+		Frame frame = this.manager.getFrame(item.getDurability());
+		if (frame != null) {
+			this.manager.removeFrame(item.getDurability());
+			event.getItem().remove();
+			event.setCancelled(true);
 		}
 	}
 	

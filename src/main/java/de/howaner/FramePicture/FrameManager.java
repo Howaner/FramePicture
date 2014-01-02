@@ -196,11 +196,7 @@ public class FrameManager {
 		if (!Config.FASTER_RENDERING) return;
 		final MapView view = Bukkit.getMap(frame.getMapId());
 		if (view == null || view.getRenderers().isEmpty()) return;
-		new Thread() {
-			public void run() {
-				player.sendMap(view);
-			}
-		}.start();
+		player.sendMap(view);
 	}
 
 }

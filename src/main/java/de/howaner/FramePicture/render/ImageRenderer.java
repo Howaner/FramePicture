@@ -37,7 +37,7 @@ public class ImageRenderer extends MapRenderer {
 		if (this.rendered) return;
 		this.removeCursors(canvas);
 		this.rendered = true;
-		new Thread() {
+		/*new Thread() {
 			@Override
 			public void run() {
 				try {
@@ -47,7 +47,9 @@ public class ImageRenderer extends MapRenderer {
 					e.printStackTrace();
 				}
 			}
-		}.start();
+		}.start();*/
+		canvas.drawImage(ImageRenderer.this.imageX, ImageRenderer.this.imageY, ImageRenderer.this.image);
+		player.sendMap(view);
 	}
 
 }
