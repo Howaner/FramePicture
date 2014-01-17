@@ -10,14 +10,14 @@ import org.bukkit.map.MapView;
 public class TextRenderer extends MapRenderer {
 	
 	private final String text;
-	private Short mapId = null;
+	private Integer mapId = null;
 	private boolean rendered = false;
 	
 	public TextRenderer(String text) {
 		this.text = text;
 	}
 	
-	public TextRenderer(String text, Short mapId) {
+	public TextRenderer(String text, Integer mapId) {
 		this.text = text;
 		this.mapId = mapId;
 	}
@@ -26,7 +26,7 @@ public class TextRenderer extends MapRenderer {
 		return this.text;
 	}
 	
-	public Short getMapId() {
+	public Integer getMapId() {
 		return this.mapId;
 	}
 	
@@ -45,7 +45,7 @@ public class TextRenderer extends MapRenderer {
 		if (this.rendered) return;
 		this.removeCursors(canvas);
 		this.rendered = true;
-		new Thread() {
+		/*new Thread() {
 			@Override
 			public void run() {
 				try {
@@ -61,7 +61,14 @@ public class TextRenderer extends MapRenderer {
 					e.printStackTrace();
 				}
 			}
-		}.start();
+		}.start();*/
+		BufferedImage image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+		Graphics g = image.getGraphics();
+		g.drawString(TextRenderer.this.text, 5, 12);
+		if (TextRenderer.this.mapId != null)
+			g.drawString("Map #" + TextRenderer.this.mapId.toString(), 70, 115);
+		
+		canvas.drawImage(0, 0, image);
 	}
 
 }

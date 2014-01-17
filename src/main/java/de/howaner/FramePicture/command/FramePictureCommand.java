@@ -47,7 +47,7 @@ public class FramePictureCommand implements CommandExecutor {
 				return true;
 			}
 			//Args prüfen
-			if (args.length != 2)
+			if (args.length < 2)
 				return sendHelp(sender);
 			//Hat er bereits einen Erstellvorgang?
 			if (Cache.hasCacheCreating(player)) {
@@ -61,10 +61,18 @@ public class FramePictureCommand implements CommandExecutor {
 					return true;
 				}
 			}
+			
 			//Erstellung
-			final String path = args[1];
+			StringBuilder pathBuilder = new StringBuilder();
+			for (int i = 1; i < args.length; i++) {
+				if (i != 1) pathBuilder.append(" ");
+				pathBuilder.append(args[i]);
+			}
+			final String path = pathBuilder.toString();
+			
 			player.sendMessage(Lang.PREFIX.getText() + Lang.PLEASE_WAIT.getText());
 			new Thread() {
+				@Override
 				public void run() {
 					if (!Utils.isImage(path)) {
 						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
@@ -131,8 +139,9 @@ public class FramePictureCommand implements CommandExecutor {
 				}
 			}
 			//Frames updaten
-			for (Frame frame : manager.getFrames())
-				frame.update();
+			for (Frame frame : manager.getFrames()) {
+				frame.checkPlayers();
+			}
 			Lang.load();
 			manager.getLogger().info("Plugin reloaded!");
 			sender.sendMessage(Lang.PREFIX.getText() + Lang.PLUGIN_RELOAD.getText());
