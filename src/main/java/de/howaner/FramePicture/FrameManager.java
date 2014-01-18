@@ -87,8 +87,10 @@ public class FrameManager {
 			Config.save();
 		}
 		
-		for (Frame frame : this.getFrames())
+		for (Frame frame : this.getFrames()) {
 			frame.checkPlayers();
+			frame.getEntity().setItem(new ItemStack(Material.AIR));
+		}
 	}
 	
 	public void onDisable() {

@@ -35,15 +35,17 @@ public class FrameListener implements Listener {
 		this.manager = manager;
 	}
 	
-	@EventHandler
+	@EventHandler (priority = EventPriority.LOW)
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
 		//Check
 		if (event.isCancelled()) return;
 		if (event.getRightClicked().getType() != EntityType.ITEM_FRAME) return;
 		ItemFrame entity = (ItemFrame) event.getRightClicked();
 		Player player = event.getPlayer();
-		Frame frame = (entity.getItem() != null && entity.getItem().getType() == Material.MAP) ? manager.getFrame(entity.getItem().getDurability()) : null;
-		if (frame != null && Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_ROTATE_FRAME && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+		Frame frame = this.manager.getFrame(entity.getLocation());
+		if (frame != null)
+			event.setCancelled(true);
+		/*if (frame != null && Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_ROTATE_FRAME && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
 			RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 			LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
 			if (!rm.getApplicableRegions(entity.getLocation()).canBuild(localPlayer)) {
@@ -51,7 +53,7 @@ public class FrameListener implements Listener {
 				event.setCancelled(true);
 				return;
 			}
-		}
+		}*/
 		///CREATING
 		if (Cache.hasCacheCreating(player)) {
 			event.setCancelled(true);
@@ -96,6 +98,7 @@ public class FrameListener implements Listener {
 		}
 		///GETTING
 		if (Cache.hasCacheGetting(player)) {
+			event.setCancelled(true);
 			//Permission
 			if (!player.hasPermission("FramePicture.get")) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
@@ -107,7 +110,6 @@ public class FrameListener implements Listener {
 				return;
 			}
 			player.sendMessage(Lang.PREFIX.getText() + Lang.GET_URL.getText().replace("%url", frame.getPath()).replace("%id", String.valueOf(frame.getId())));
-			event.setCancelled(true);
 			Cache.removeCacheGetting(player);
 		}
 	}
