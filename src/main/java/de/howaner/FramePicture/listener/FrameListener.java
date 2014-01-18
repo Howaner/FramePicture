@@ -2,7 +2,6 @@ package de.howaner.FramePicture.listener;
 
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -18,7 +17,6 @@ import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventPriority;
@@ -157,7 +155,7 @@ public class FrameListener implements Listener {
 		}
 	}
 	
-	@EventHandler
+	@EventHandler (priority = EventPriority.LOW)
 	public void onHangingBreak(HangingBreakEvent event) {
 		if (event.isCancelled()) return;
 		if (event.getEntity().getType() != EntityType.ITEM_FRAME) return;
