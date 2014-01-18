@@ -88,8 +88,8 @@ public class FrameManager {
 		}
 		
 		for (Frame frame : this.getFrames()) {
-			frame.checkPlayers();
 			frame.getEntity().setItem(new ItemStack(Material.AIR));
+			frame.checkPlayers();
 		}
 	}
 	
