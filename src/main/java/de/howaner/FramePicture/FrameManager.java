@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,16 +23,22 @@ import de.howaner.FramePicture.listener.FrameListener;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
+import de.howaner.FramePicture.util.PictureDatabase;
 import de.howaner.FramePicture.util.Utils;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Vector;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.map.MapView;
 
 public class FrameManager {
 	public FramePicturePlugin p;
 	public static File framesFile = new File("plugins/FramePicture/frames.yml");
-	private Map<Integer, Frame> frames = new HashMap<Integer, Frame>();
+	private final Map<Integer, Frame> frames = new HashMap<Integer, Frame>();
+	private PictureDatabase pictureDB;
+	private final Vector<Player> checkPlayers = new Vector<Player>();
 	
 	public FrameManager(FramePicturePlugin plugin) {
 		this.p = plugin;
@@ -65,7 +70,7 @@ public class FrameManager {
 		//Messages
 		Lang.load();
 		//Load Frames
-		Utils.checkFolder();
+		this.pictureDB = new PictureDatabase();
 		this.loadFrames();
 		this.saveFrames();
 		//Listener
@@ -87,16 +92,19 @@ public class FrameManager {
 			Config.save();
 		}
 		
-		for (Frame frame : this.getFrames()) {
+		for (Frame frame : this.getFrames())
 			frame.getEntity().setItem(new ItemStack(Material.AIR));
-			frame.checkPlayers();
-		}
+		this.checkPlayers();
 	}
 	
 	public void onDisable() {
 		this.saveFrames();
+		this.pictureDB.clear();
 		Bukkit.getScheduler().cancelTasks(this.p);
-		Utils.imageCache.clear();
+	}
+	
+	public PictureDatabase getPictureDatabase() {
+		return this.pictureDB;
 	}
 	
 	public Logger getLogger() {
@@ -115,34 +123,32 @@ public class FrameManager {
 			return false;
 		
 		return this.isFramePicture(entity.getLocation());
-		
-		//return this.isFramePicture(iFrame.getItem().getDurability() - 1024);
 	}
 	
 	public boolean isFramePicture(Location loc) {
 		return this.getFrame(loc) != null;
 	}
 	
-	public boolean removeFrame(Frame frame) {
-		for (Entry<Integer, Frame> e : this.frames.entrySet()) {
-			if (frame == e.getValue()) {
-				this.removeFrame(e.getKey());
-				return true;
-			}
-		}
-		return false;
+	public boolean removeFrame(int id) {
+		return this.removeFrame(this.frames.get(id));
 	}
 	
-	public boolean removeFrame(int id) {
-		Frame frame = this.getFrame(id);
+	public boolean removeFrame(Frame frame) {
 		if (frame == null) return false;
+		
 		//Event
 		RemoveFrameEvent customEvent = new RemoveFrameEvent(frame);
 		Bukkit.getPluginManager().callEvent(customEvent);
 		if (customEvent.isCancelled()) return false;
 		
-		this.frames.remove(id);
-		//Utils.removeMapFile(mapId);
+		this.frames.remove(frame.getId());
+		
+		if (Config.FRAME_REMOVE_IMAGES && this.getFramesWithImage(frame.getPicture()).isEmpty()) {
+			if (this.pictureDB.deleteImage(frame.getPicture())) {
+				this.getLogger().log(Level.INFO, "Removed Image for Frame #{0}.", frame.getId());
+			}
+		}
+		
 		this.saveFrames();
 		return true;
 	}
@@ -167,8 +173,7 @@ public class FrameManager {
 		this.frames.put(frame.getId(), frame);
 		entity.setItem(new ItemStack(Material.AIR, 1));
 		
-		frame.checkPlayers();
-		
+		this.checkPlayers();
 		this.saveFrames();
 		return frame;
 	}
@@ -185,51 +190,57 @@ public class FrameManager {
 		return null;
 	}
 	
+	public List<Frame> getFramesWithImage(String image) {
+		List<Frame> frameList = new ArrayList<Frame>();
+		for (Frame frame : this.frames.values()) {
+			if (frame.getPicture().equals(image))
+				frameList.add(frame);
+		}
+		return frameList;
+	}
+	
 	public List<Frame> getFrames() {
 		List<Frame> frameList = new ArrayList<Frame>();
 		frameList.addAll(frames.values());
 		return frameList;
 	}
 	
-	public void convertFramesFile() {
-		this.getLogger().info("Converting frames.yml ...");
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(framesFile);
-		YamlConfiguration newConfig = new YamlConfiguration();
+	public List<Frame> addMultiFrames(BufferedImage img, ItemFrame[] frames, int vertical, int horizontal) {
+		if (frames.length == 0 || horizontal <= 0) return null;
+		img = Utils.scaleImage(img, img.getWidth() * vertical, img.getHeight() * horizontal);
 		
-		int i = 0;
-		for (String key : config.getKeys(false)) {
-			short id = Short.parseShort(key);
-			String path = config.getString(key);
-			
-			for (ItemFrame entity : Bukkit.getWorlds().get(0).getEntitiesByClass(ItemFrame.class)) {
-				if (entity.getItem() == null || entity.getItem().getType() != Material.MAP) continue;
-				if (entity.getItem().getDurability() == id) {
-					ConfigurationSection section = newConfig.createSection(String.valueOf(i));
-					section.set("Path", path);
-					section.set("World", entity.getLocation().getWorld().getName());
-					section.set("X", entity.getLocation().getBlockX());
-					section.set("Y", entity.getLocation().getBlockY());
-					section.set("Z", entity.getLocation().getBlockZ());
-					this.getLogger().info("Converted Map #" + String.valueOf(id) + "!");
-					entity.setItem(new ItemStack(Material.AIR));
-					i += 1;
-					break;
-				}
-			}
-			if (!newConfig.contains(String.valueOf(i-1))) {
-				this.getLogger().info("Can't convert Map #" + id + "!");
+		int width = img.getWidth() / vertical;
+		int height = img.getHeight() / horizontal;
+		
+		List<Frame> frameList = new ArrayList<Frame>();
+		int globalId = this.getNewFrameID();
+		//y = Horizontal
+		for (int y = 0; y < horizontal; y++) {
+			//x = Vertical
+			for (int x = 0; x < vertical; x++) {
+				BufferedImage frameImg = Utils.cutImage(img, x * width, y * height, width, height);
+				frameImg = Utils.scaleImage(frameImg, 128, 128, false);
+				File file = this.pictureDB.writeImage(frameImg, String.format("Frame%s_%s-%s", globalId, x, y));
+				
+				ItemFrame entity = (y == 0) ? frames[x] : frames[vertical * y + x];
+				entity.setItem(new ItemStack(Material.AIR));
+				
+				Frame frame = this.getFrame(entity.getLocation());
+				if (frame != null)
+					this.frames.remove(frame.getId());
+				
+				frame = new Frame(this.getNewFrameID(), entity, file.getName());
+				frame.setPicture(file.getName());
+				frame.setCachedPicture(frameImg);
+				
+				this.frames.put(getNewFrameID(), frame);
+				frameList.add(frame);
 			}
 		}
 		
-		try {
-			framesFile.renameTo(new File(framesFile.getParentFile(), "frames.yml.old"));
-			framesFile = new File("plugins/FramePicture/frames.yml");
-			newConfig.save(framesFile);
-			this.getLogger().info("Converted " + i + " Frames successfull!");
-		} catch (Exception e) {
-			this.getLogger().warning("Error while converting: " + e.getMessage());
-			e.printStackTrace();
-		}
+		this.checkPlayers();
+		this.saveFrames();
+		return frameList;
 	}
 	
 	/* Load Frames */
@@ -238,41 +249,50 @@ public class FrameManager {
 		this.frames.clear();
 		for (String key : config.getKeys(false)) {
 			ConfigurationSection section = config.getConfigurationSection(key);
-			if (section == null || !section.contains("World") || !section.contains("X") || !section.contains("Y") || !section.contains("Z")) {
-				this.convertFramesFile();
-				this.loadFrames();
-				return;
-			}
+			final int id = Integer.parseInt(key);
 			
-			int id = Integer.parseInt(key);
-			String path = section.getString("Path");
-			Location loc = new Location(Bukkit.getWorld(section.getString("World")),
+			World world =  Bukkit.getWorld(section.getString("World"));
+			if (world == null) {
+				this.getLogger().log(Level.WARNING, "Can''t find World {0} for Frame #{1}!", new Object[] {section.getString("World"), String.valueOf(id) });
+				continue;
+			}
+			final Location loc = new Location(world,
 					section.getInt("X"),
 					section.getInt("Y"),
 					section.getInt("Z"));
 			
-			ItemFrame entity = null;
-			//Search ItemFrame
-			for (ItemFrame e : Bukkit.getWorld(section.getString("World")).getEntitiesByClass(ItemFrame.class)) {
-				if (e.getLocation().getWorld() == loc.getWorld() &&
-						e.getLocation().getBlockX() == loc.getBlockX() &&
-						e.getLocation().getBlockY() == loc.getBlockY() &&
-						e.getLocation().getBlockZ() == loc.getBlockZ()) {
-					entity = e;
-					break;
-				}
-			}
-			
+			ItemFrame entity = Utils.getFrameAt(loc);
 			if (entity == null) {
-				this.getLogger().warning("Can't find Map for #" + id + "!");
+				this.getLogger().log(Level.WARNING, "The ItemFrame for Frame #{0] couldn''t found! Is the ItemFrame broken?", id);
 				continue;
+			}
+			final ItemFrame e = entity;
+			
+			String picture;
+			if (section.isString("Path")) {
+				picture = section.getString("Path");
+				if (picture.startsWith("http://") || picture.startsWith("https://") || picture.startsWith("ftp://") || picture.startsWith("file://")) {
+					this.pictureDB.downloadImage(picture, new PictureDatabase.FinishDownloadSignal() {
+						@Override
+						public void downloadSuccess(File file) {
+							Frame frame = new Frame(id, e, file.getName());
+							FrameManager.this.frames.put(id, frame);
+						}
+
+						@Override
+						public void downloadError(Exception e) { }
+					});
+					continue;
+				}
+			} else {
+				picture = section.getString("Picture");
 			}
 			
 			//Set Frame
-			Frame frame = new Frame(id, entity, path);
+			Frame frame = new Frame(id, entity, picture);
 			this.frames.put(id, frame);
 		}
-		this.getLogger().info("Loaded " + this.frames.size() + " Frames!");
+		this.getLogger().log(Level.INFO, "Loaded {0} Frames!", this.frames.size());
 	}
 	
 	/* Save Frames */
@@ -281,7 +301,7 @@ public class FrameManager {
 		for (Frame frame : this.getFrames()) {
 			ConfigurationSection section = config.createSection(String.valueOf(frame.getId()));
 			
-			section.set("Path", frame.getPath());
+			section.set("Picture", frame.getPicture());
 			section.set("World", frame.getLocation().getWorld().getName());
 			section.set("X", frame.getLocation().getBlockX());
 			section.set("Y", frame.getLocation().getBlockY());
@@ -290,10 +310,56 @@ public class FrameManager {
 		
 		try {
 			config.save(framesFile);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			FramePicturePlugin.log.log(Level.WARNING, "Error while saving the Frames!");
 			e.printStackTrace();
 		}
+	}
+	
+	public void checkPlayers() {
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			this.checkPlayer(player);
+		}
+	}
+	
+	public void checkPlayer(final Player player) {
+		if (this.checkPlayers.contains(player)) return;
+		final Location loc1 = player.getLocation();
+		new Thread() {
+			@Override
+			public void run() {
+				for (Frame frame : FrameManager.this.frames.values()) {
+					if (frame == null) continue; //Asynchronous
+					Location loc2 = frame.getLocation();
+					
+					if (
+						Utils.diff(loc1.getBlockX(), loc2.getBlockX()) <= Config.SEE_RADIUS
+						&& Utils.diff(loc1.getBlockY(), loc2.getBlockY()) <= Config.SEE_RADIUS
+						&& Utils.diff(loc1.getBlockZ(), loc2.getBlockZ()) <= Config.SEE_RADIUS
+					)
+					{
+						synchronized(frame.getSeePlayers()) {
+							if (frame.getSeePlayers().contains(player)) continue;
+							frame.getSeePlayers().add(player);
+						}
+						synchronized(frame) {
+							frame.sendMap(player);
+						}
+					}
+					else
+					{
+						synchronized(frame.getSeePlayers()) {
+							if (frame.getSeePlayers().contains(player))
+								frame.getSeePlayers().remove(player);
+						}
+					}
+				}
+				synchronized(FrameManager.this.checkPlayers) {
+					FrameManager.this.checkPlayers.remove(player);
+				}
+			}
+		}.start();
+		this.checkPlayers.add(player);
 	}
 
 }

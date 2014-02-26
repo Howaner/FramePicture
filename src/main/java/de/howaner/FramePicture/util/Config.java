@@ -18,9 +18,9 @@ public class Config {
 	public static boolean WORLDGUARD_ENABLED = false;
 	public static boolean WORLDGUARD_BUILD = true;
 	public static boolean WORLDGUARD_BREAK = true;
-	public static boolean WORLDGUARD_ROTATE_FRAME = true;
 	public static boolean FASTER_RENDERING = true;
 	public static int SEE_RADIUS = 60;
+	public static boolean FRAME_REMOVE_IMAGES = true;
 	//File
 	public static File configFile = new File("plugins/FramePicture/config.yml");
 	
@@ -35,7 +35,10 @@ public class Config {
 		WORLDGUARD_ENABLED = config.getBoolean("WorldGuard.Enabled");
 		WORLDGUARD_BUILD = config.getBoolean("WorldGuard.ProtectBuild");
 		WORLDGUARD_BREAK = config.getBoolean("WorldGuard.ProtectBreak");
-		WORLDGUARD_ROTATE_FRAME = config.getBoolean("WorldGuard.ProtectRotate");
+		SEE_RADIUS = config.getInt("Frame.LoadRadius");
+		FRAME_REMOVE_IMAGES = config.getBoolean("Frame.RemoveImageWhenFrameDestroy");
+		
+		FramePicturePlugin.log.info("Configuration loaded!");
 	}
 	
 	public static void save() {
@@ -49,7 +52,8 @@ public class Config {
 		config.set("WorldGuard.Enabled", WORLDGUARD_ENABLED);
 		config.set("WorldGuard.ProtectBuild", WORLDGUARD_BUILD);
 		config.set("WorldGuard.ProtectBreak", WORLDGUARD_BREAK);
-		config.set("WorldGuard.ProtectRotate", WORLDGUARD_ROTATE_FRAME);
+		config.set("Frame.LoadRadius", SEE_RADIUS);
+		config.set("Frame.RemoveImageWhenFrameDestroy", FRAME_REMOVE_IMAGES);
 		try {
 			config.save(configFile);
 		} catch (Exception e) {

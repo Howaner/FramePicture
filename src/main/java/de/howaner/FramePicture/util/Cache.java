@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 public class Cache {
 	private static Map<Player, String> createCache = new HashMap<Player, String>();
+	private static Map<Player, String> createMultiCache = new HashMap<Player, String>();
 	private static List<Player> removeCache = new ArrayList<Player>();
 	
 	/* Cache Creating */
@@ -22,10 +23,31 @@ public class Cache {
 	
 	public static void setCacheCreating(Player player, String path) {
 		createCache.put(player, path);
+		createMultiCache.remove(player);
+		removeCache.remove(player);
 	}
 	
 	public static void removeCacheCreating(Player player) {
 		createCache.remove(player);
+	}
+	
+	/* Cache Multiframe Creating */
+	public static boolean hasCacheMultiCreating(Player player) {
+		return createMultiCache.containsKey(player);
+	}
+	
+	public static String getCacheMultiCreating(Player player) {
+		return createMultiCache.get(player);
+	}
+	
+	public static void setCacheMultiCreating(Player player, String path) {
+		createCache.remove(player);
+		createMultiCache.put(player, path);
+		removeCache.remove(player);
+	}
+	
+	public static void removeCacheMultiCreating(Player player) {
+		createMultiCache.remove(player);
 	}
 	
 	

@@ -27,14 +27,15 @@ import org.bukkit.inventory.ItemStack;
 public class Frame {
 	private final int id;
 	private ItemFrame entity;
-	private String path;
+	private String picture;
+	private BufferedImage cachedPicture;
 	private RenderData cache = null;
-	private List<Player> seePlayers = new ArrayList<Player>();
+	private final List<Player> seePlayers = new ArrayList<Player>();
 	
-	public Frame(final int id, ItemFrame entity, String path) {
+	public Frame(final int id, ItemFrame entity, String picture) {
 		this.id = id;
 		this.entity = entity;
-		this.path = path;
+		this.picture = picture;
 	}
 	
 	public int getId() {
@@ -53,55 +54,34 @@ public class Frame {
 		return this.entity;
 	}
 	
-	public String getPath() {
-		return this.path;
+	public String getPicture() {
+		return this.picture;
 	}
 	
-	public void setPath(String path) {
-		this.path = path;
+	public void setPicture(String picture) {
+		this.picture = picture;
 		//TODO: Send to all players
+	}
+	
+	public BufferedImage getCachedPicture() {
+		return this.cachedPicture;
+	}
+	
+	public void setCachedPicture(BufferedImage image) {
+		this.cachedPicture = image;
 	}
 	
 	public List<Player> getSeePlayers() {
 		return this.seePlayers;
 	}
 	
-	public void checkPlayer(final Player player) {
-		new Thread() {
-			@Override
-			public void run() {
-				List<Frame> frames = FramePicturePlugin.getManager().getFramesInRadius(player.getLocation(), Config.SEE_RADIUS);
-				if (frames.contains(Frame.this)) {
-					if (Frame.this.seePlayers.contains(player)) return;
-					Frame.this.seePlayers.add(player);
-					try {
-						Thread.sleep(1000L);
-					} catch (Exception e) {}
-					Frame.this.sendMap(player);
-				} else {
-					if (!Frame.this.seePlayers.contains(player)) return;
-					Frame.this.seePlayers.remove(player);
-				}
-			}
-		}.start();
-	}
-	
-	public void checkPlayers() {
-		for (Player player : Bukkit.getOnlinePlayers())
-			this.checkPlayer(player);
-	}
-	
-	public BufferedImage getPicture() {
-		try {
-			BufferedImage image = Utils.getPicture(this.getPath());
-			if (image == null) return null;
+	public BufferedImage getBufferImage() {
+		if (this.cachedPicture == null) {
+			this.cachedPicture = FramePicturePlugin.getManager().getPictureDatabase().loadImage(this.picture);
 			if (Config.CHANGE_SIZE_ENABLED)
-				image = Utils.scaleImage(image, Config.SIZE_WIDTH, Config.SIZE_HEIGHT);
-			return image;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+				this.cachedPicture = Utils.scaleImage(cachedPicture, Config.SIZE_WIDTH, Config.SIZE_HEIGHT);
 		}
+		return this.cachedPicture;
 	}
 	
 	public RenderData getRenderData() {
@@ -139,7 +119,6 @@ public class Frame {
 		nmsItem.a(entity);
 		
 		DataWatcher watcher = new DataWatcher(entity);
-		//watcher.a(2, 5);
 		watcher.a(2, 5);
 		watcher.a(3, Byte.valueOf((byte)0));
 		watcher.watch(2, nmsItem);
@@ -147,17 +126,10 @@ public class Frame {
 		
 		PacketPlayOutEntityMetadata packet = new PacketPlayOutEntityMetadata(entity.getId(), watcher, false);
 		
-		/*PacketPlayOutSpawnEntity spawnPacket = new PacketPlayOutSpawnEntity(entity, 71, entity.direction);
-		spawnPacket.a(MathHelper.d(entity.x * 32));
-		spawnPacket.b(MathHelper.d(entity.y * 32));
-		spawnPacket.c(MathHelper.d(entity.z * 32));*/
-		
 		((CraftPlayer)player).getHandle().playerConnection.sendPacket(packet);
 	}
 	
 	public void sendMap(Player player) {
-		this.sendMapContent(player);
-		
 		RenderData data = this.getRenderData();
 		for (int x = 0; x < 128; x++) {
 			byte[] bytes = new byte[''];
@@ -168,12 +140,14 @@ public class Frame {
 			PacketPlayOutMap packet = new PacketPlayOutMap(this.getMapId(), bytes);
 			((CraftPlayer)player).getHandle().playerConnection.sendPacket(packet);
 		}
+		
+		this.sendMapContent(player);
 	}
 	
 	public MapRenderer generateRenderer() {
-		BufferedImage image = Frame.this.getPicture();
+		BufferedImage image = Frame.this.getBufferImage();
 		if (image == null) {
-			FramePicturePlugin.log.warning("The Url \"" + Frame.this.getPath() + "\" from Frame #" + Frame.this.getId() + " does not exists!");
+			FramePicturePlugin.log.warning("The Url \"" + Frame.this.getPicture() + "\" from Frame #" + Frame.this.getId() + " does not exists!");
 			return new TextRenderer("Can't read Image!", this.getId());
 		}
 		

@@ -12,7 +12,6 @@ import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
-import de.howaner.FramePicture.util.Utils;
 
 public class FramePictureCommand implements CommandExecutor {
 	
@@ -70,18 +69,56 @@ public class FramePictureCommand implements CommandExecutor {
 			}
 			final String path = pathBuilder.toString();
 			
-			player.sendMessage(Lang.PREFIX.getText() + Lang.PLEASE_WAIT.getText());
-			new Thread() {
-				@Override
-				public void run() {
-					if (!Utils.isImage(path)) {
-						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
-						return;
-					}
-					Cache.setCacheCreating(player, path);
-					player.sendMessage(Lang.PREFIX.getText() + Lang.CLICK_FRAME.getText());
+			//player.sendMessage(Lang.PREFIX.getText() + Lang.PLEASE_WAIT.getText());
+			Cache.setCacheCreating(player, path);
+			player.sendMessage(Lang.PREFIX.getText() + Lang.CLICK_FRAME.getText());
+			return true;
+		}
+		///MULTISET
+		else if (aufgabe.equalsIgnoreCase("multiset")) {
+			//Is a Player?
+			if (!(sender instanceof Player)) {
+				sender.sendMessage(Lang.PREFIX.getText() + Lang.NO_PLAYER.getText());
+				return true;
+			}
+			final Player player = (Player)sender;
+			//Permission
+			if (!player.hasPermission("FramePicture.multiset")) {
+				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
+				return true;
+			}
+			//Bestellvorgang abbrechen, wenn args = 1
+			if (args.length == 1 && Cache.hasCacheMultiCreating(player)) {
+				Cache.removeCacheMultiCreating(player);
+				player.sendMessage(Lang.PREFIX.getText() + Lang.CREATING_CANCELLED.getText());
+				return true;
+			}
+			//Args prüfen
+			if (args.length < 2)
+				return sendHelp(sender);
+			//Hat er bereits einen Erstellvorgang?
+			if (Cache.hasCacheMultiCreating(player)) {
+				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_SELECTION.getText());
+				return true;
+			}
+			//Money
+			if (Config.MONEY_ENABLED) {
+				if (!FramePicturePlugin.getEconomy().has(player.getName(), Config.CREATE_PRICE)) {
+					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
+					return true;
 				}
-			}.start();
+			}
+			
+			//Erstellung
+			StringBuilder pathBuilder = new StringBuilder();
+			for (int i = 1; i < args.length; i++) {
+				if (i != 1) pathBuilder.append(" ");
+				pathBuilder.append(args[i]);
+			}
+			final String path = pathBuilder.toString();
+			
+			Cache.setCacheMultiCreating(player, path);
+			player.sendMessage(Lang.PREFIX.getText() + Lang.CLICK_MULTIFRAME.getText());
 			return true;
 		}
 		///GET
@@ -139,9 +176,7 @@ public class FramePictureCommand implements CommandExecutor {
 				}
 			}
 			//Frames updaten
-			for (Frame frame : manager.getFrames()) {
-				frame.checkPlayers();
-			}
+			this.manager.checkPlayers();
 			Lang.load();
 			manager.getLogger().info("Plugin reloaded!");
 			sender.sendMessage(Lang.PREFIX.getText() + Lang.PLUGIN_RELOAD.getText());
@@ -153,6 +188,7 @@ public class FramePictureCommand implements CommandExecutor {
 	public boolean sendHelp(CommandSender sender) {
 		sender.sendMessage(ChatColor.GREEN + "Help from /FramePicture or /fp:");
 		sender.sendMessage("/FramePicture set <URL>  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Set a Picture in a Frame.");
+		sender.sendMessage("/FramePicture multiset <URL>  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Create a Picture wall.");
 		sender.sendMessage("/FramePicture get  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Get the Url from a Picture");
 		sender.sendMessage("/FramePicture reload  " + ChatColor.GOLD + "--" + ChatColor.WHITE + "  Reload the Config.");
 		return true;

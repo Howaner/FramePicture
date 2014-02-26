@@ -15,11 +15,13 @@ public enum Lang {
 	NO_PERMISSION("&4No Permission!"),
 	ALREADY_SELECTION("&4You have already a Selection!"),
 	CLICK_FRAME("&3Please click on the Frame!"),
+	CLICK_MULTIFRAME("&3Please click on the top left Item Frame!"),
 	GETTING_MODE_ENABLED("&2Getting Mode enabled!"),
 	GETTING_MODE_DISABLED("&2Getting Mode disabled!"),
 	CREATING_CANCELLED("&3Creating cancelled!"),
 	PLUGIN_RELOAD("&2Plugin reloaded!"),
 	FRAME_SET("&2Frame with ID &7#%id&2 created!"),
+	MULTIFRAME_SET("&2%amount Frames created!"),
 	NO_FRAMEPICTURE("&4This is not a Frame Picture!"),
 	GET_URL("&3Infos from Frame:\n&fID: &7#%id\n&fURL: &7%url"),
 	NO_PICTURE("&4This is not a Picture: %url"),
@@ -27,7 +29,8 @@ public enum Lang {
 	NOT_ENOUGH_MONEY("&4You haven't enough Money!"),
 	PLEASE_WAIT("&7Please wait.."),
 	FRAME_REMOVED("&3Frame removed!"),
-	ALREADY_FRAME("&4This is already a Frame Picture!");
+	ALREADY_FRAME("&4This is already a Frame Picture!"),
+	DOWNLOAD_ERROR("&4An error occurred while downloading the Picture!");
 	
 	private final String value;
 	public static YamlConfiguration config = null;

@@ -26,12 +26,6 @@ public class ImageRenderer extends MapRenderer {
 		return this.rendered;
 	}
 	
-	private void removeCursors(MapCanvas canvas) {
-		for (int i=0; i<canvas.getCursors().size(); i++) {
-			canvas.getCursors().removeCursor(canvas.getCursors().getCursor(i));
-		}
-	}
-	
 	@Override
 	public void render(final MapView view, final MapCanvas canvas, final Player player) {
 		if (this.rendered) return;
