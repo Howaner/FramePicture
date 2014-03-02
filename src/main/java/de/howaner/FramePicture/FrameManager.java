@@ -328,7 +328,11 @@ public class FrameManager {
 		new Thread() {
 			@Override
 			public void run() {
-				for (Frame frame : FrameManager.this.frames.values()) {
+				List<Frame> frames = new ArrayList<Frame>();
+				synchronized(FrameManager.this.frames) {
+					frames.addAll(FrameManager.this.frames.values());
+				}
+				for (Frame frame : frames) {
 					if (frame == null) continue; //Asynchronous
 					Location loc2 = frame.getLocation();
 					
