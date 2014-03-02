@@ -21,6 +21,7 @@ public class Config {
 	public static boolean FASTER_RENDERING = true;
 	public static int SEE_RADIUS = 60;
 	public static boolean FRAME_REMOVE_IMAGES = true;
+	public static long FRAME_LOAD_TIME = 200;
 	//File
 	public static File configFile = new File("plugins/FramePicture/config.yml");
 	
@@ -37,6 +38,7 @@ public class Config {
 		WORLDGUARD_BREAK = config.getBoolean("WorldGuard.ProtectBreak");
 		SEE_RADIUS = config.getInt("Frame.LoadRadius");
 		FRAME_REMOVE_IMAGES = config.getBoolean("Frame.RemoveImageWhenFrameDestroy");
+		FRAME_LOAD_TIME = config.getLong("Frame.LoadTime");
 		
 		FramePicturePlugin.log.info("Configuration loaded!");
 	}
@@ -54,6 +56,7 @@ public class Config {
 		config.set("WorldGuard.ProtectBreak", WORLDGUARD_BREAK);
 		config.set("Frame.LoadRadius", SEE_RADIUS);
 		config.set("Frame.RemoveImageWhenFrameDestroy", FRAME_REMOVE_IMAGES);
+		config.set("Frame.LoadTime", FRAME_LOAD_TIME);
 		try {
 			config.save(configFile);
 		} catch (Exception e) {

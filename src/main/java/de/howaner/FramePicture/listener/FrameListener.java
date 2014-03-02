@@ -373,7 +373,7 @@ public class FrameListener implements Listener {
 			public void run() {
 				FrameListener.this.manager.checkPlayer(player);
 			}
-		}, 30L);
+		}, Config.FRAME_LOAD_TIME);
 	}
 	
 }
