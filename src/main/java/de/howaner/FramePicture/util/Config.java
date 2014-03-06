@@ -19,7 +19,7 @@ public class Config {
 	public static boolean WORLDGUARD_BUILD = true;
 	public static boolean WORLDGUARD_BREAK = true;
 	public static boolean FASTER_RENDERING = true;
-	public static int SEE_RADIUS = 60;
+	public static int SEE_RADIUS = 30;
 	public static boolean FRAME_REMOVE_IMAGES = true;
 	public static long FRAME_LOAD_TIME = 200;
 	//File
@@ -36,9 +36,12 @@ public class Config {
 		WORLDGUARD_ENABLED = config.getBoolean("WorldGuard.Enabled");
 		WORLDGUARD_BUILD = config.getBoolean("WorldGuard.ProtectBuild");
 		WORLDGUARD_BREAK = config.getBoolean("WorldGuard.ProtectBreak");
-		SEE_RADIUS = config.getInt("Frame.LoadRadius");
-		FRAME_REMOVE_IMAGES = config.getBoolean("Frame.RemoveImageWhenFrameDestroy");
-		FRAME_LOAD_TIME = config.getLong("Frame.LoadTime");
+		if (config.isInt("Frame.SendRadius"))
+			SEE_RADIUS = config.getInt("Frame.SendRadius");
+		if (config.isBoolean("Frame.RemoveImageWhenFrameDestroy"))
+			FRAME_REMOVE_IMAGES = config.getBoolean("Frame.RemoveImageWhenFrameDestroy");
+		if (config.isLong("Frame.LoadTime"))
+			FRAME_LOAD_TIME = config.getLong("Frame.LoadTime");
 		
 		FramePicturePlugin.log.info("Configuration loaded!");
 	}
@@ -54,7 +57,7 @@ public class Config {
 		config.set("WorldGuard.Enabled", WORLDGUARD_ENABLED);
 		config.set("WorldGuard.ProtectBuild", WORLDGUARD_BUILD);
 		config.set("WorldGuard.ProtectBreak", WORLDGUARD_BREAK);
-		config.set("Frame.LoadRadius", SEE_RADIUS);
+		config.set("Frame.SendRadius", SEE_RADIUS);
 		config.set("Frame.RemoveImageWhenFrameDestroy", FRAME_REMOVE_IMAGES);
 		config.set("Frame.LoadTime", FRAME_LOAD_TIME);
 		try {
