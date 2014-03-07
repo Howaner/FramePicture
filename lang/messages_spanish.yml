@@ -1,0 +1,28 @@
+# The Messages from FramePicture.
+# Translated by jaime29010
+PLUGIN_ENABLED: ¡Plugin activado!
+PLUGIN_DISABLED: ¡Plugin desactivado!
+NO_PLAYER: '&4¡Tu no eres un jugador!'
+NO_PERMISSION: '&4¡No tienes permiso para ejecutar este comando!'
+ALREADY_SELECTION: '&¡Ya has echo una seleccion!'
+CLICK_FRAME: '&3¡Porfavor haz click en un marco!'
+CLICK_MULTIFRAME: '&3¡Porfavor haz click en el primer marco situado arriba a la izquierda!'
+GETTING_MODE_ENABLED: '&2¡Modo de introduccion activado!'
+GETTING_MODE_DISABLED: '&2¡Modo de introduccion desactivado!'
+CREATING_CANCELLED: '&3¡Proceso de creacion cancelado!'
+PLUGIN_RELOAD: '&2¡Plugin recargado!'
+FRAME_SET: '&2Marco con ID &7#%id&2 creado!'
+MULTIFRAME_SET: '¡&2%marcos con imagenes creados!'
+NO_FRAMEPICTURE: '&4¡No es una imagen de marco!'
+GET_URL: |-
+  &3Informacion del marco:
+  &fID: &7#%id
+  &fURL: &7%url
+NO_PICTURE: '&4Esto no es una imagen valida: %url'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4¡No tienes dinero suficiente!'
+PLEASE_WAIT: '&7Porfavor espera..'
+FRAME_REMOVED: '&¡Marco borrado!'
+ALREADY_FRAME: '&4¡Esto ya es un marco con ima!'
+DOWNLOAD_ERROR: '&4¡Ha ocurrido un error mientras se descargaba la imagen!'
+
