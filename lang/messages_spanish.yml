@@ -23,6 +23,6 @@ PREFIX: '&7[&6FramePicture&7] &f'
 NOT_ENOUGH_MONEY: '&4¡No tienes dinero suficiente!'
 PLEASE_WAIT: '&7Porfavor espera..'
 FRAME_REMOVED: '&¡Marco borrado!'
-ALREADY_FRAME: '&4¡Esto ya es un marco con ima!'
+ALREADY_FRAME: '&4¡Esto ya es un marco con imagen!'
 DOWNLOAD_ERROR: '&4¡Ha ocurrido un error mientras se descargaba la imagen!'
 

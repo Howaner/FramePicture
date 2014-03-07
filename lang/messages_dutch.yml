@@ -1,0 +1,27 @@
+# The Messages from FramePicture.
+PLUGIN_ENABLED: Plugin aangezet!
+PLUGIN_DISABLED: Plugin uitgezet!
+NO_PLAYER: '&4Jij bent niet een speler!'
+NO_PERMISSION: '&4Geen toegang!'
+ALREADY_SELECTION: '&4Je hebt al een selectie!'
+CLICK_FRAME: '&3Klik alstublieft op de lijst!'
+CLICK_MULTIFRAME: '&3Klik alstublieft in de linker bovenhoek van de lijst!'
+GETTING_MODE_ENABLED: '&2Getting Mode aangezet!'
+GETTING_MODE_DISABLED: '&2Getting Mode uitgezet!'
+CREATING_CANCELLED: '&3Creëren geannuleerd!'
+PLUGIN_RELOAD: '&2Plugin herladen!'
+FRAME_SET: '&2Lijst met ID &7#%id&2 gecreërd!'
+MULTIFRAME_SET: '&2%amount lijsten gecreërd!'
+NO_FRAMEPICTURE: '&4Dit is geen foto lijst!'
+GET_URL: '&3Informatie over deze lijst:'
+
+  &fID: &7#%id
+
+  &fURL: &7%url'
+NO_PICTURE: '&4Dit is geen foto: %url'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4Je hebt niet genoeg geld!'
+PLEASE_WAIT: '&7Wachten..'
+FRAME_REMOVED: '&3Lijst verwijderd!'
+ALREADY_FRAME: '&4Dit is al een lijst!'
+DOWNLOAD_ERROR: '&4Er is een error ontstaan terwijl we je foto probeerden te downloaden!'
