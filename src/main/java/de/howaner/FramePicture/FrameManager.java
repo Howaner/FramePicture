@@ -20,6 +20,8 @@ import de.howaner.FramePicture.command.FramePictureCommand;
 import de.howaner.FramePicture.event.CreateFrameEvent;
 import de.howaner.FramePicture.event.RemoveFrameEvent;
 import de.howaner.FramePicture.listener.FrameListener;
+import de.howaner.FramePicture.tracker.FakeEntityTracker;
+import de.howaner.FramePicture.tracker.FakeEntityTrackerEntry;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
@@ -27,10 +29,19 @@ import de.howaner.FramePicture.util.PictureDatabase;
 import de.howaner.FramePicture.util.Utils;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Vector;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraft.server.v1_7_R1.EntityItemFrame;
+import net.minecraft.server.v1_7_R1.EntityPlayer;
+import net.minecraft.server.v1_7_R1.EntityTracker;
+import net.minecraft.server.v1_7_R1.EntityTrackerEntry;
+import net.minecraft.server.v1_7_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.craftbukkit.v1_7_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class FrameManager {
@@ -38,7 +49,6 @@ public class FrameManager {
 	public static File framesFile = new File("plugins/FramePicture/frames.yml");
 	private final Map<Integer, Frame> frames = new HashMap<Integer, Frame>();
 	private PictureDatabase pictureDB;
-	private final Vector<Player> checkPlayers = new Vector<Player>();
 	
 	public FrameManager(FramePicturePlugin plugin) {
 		this.p = plugin;
@@ -94,13 +104,27 @@ public class FrameManager {
 		
 		for (Frame frame : this.getFrames())
 			frame.getEntity().setItem(new ItemStack(Material.AIR));
-		this.checkPlayers();
+		
+		for (World world : Bukkit.getWorlds())
+			this.replaceTracker(world);
 	}
 	
 	public void onDisable() {
 		this.saveFrames();
 		this.pictureDB.clear();
 		Bukkit.getScheduler().cancelTasks(this.p);
+	}
+	
+	public void sendFrameToPlayers(Frame frame) {
+		WorldServer server = ((CraftWorld)frame.getLocation().getWorld()).getHandle();
+		EntityTracker tracker = server.tracker;
+		EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(frame.getEntity().getEntityId());
+		
+		entry.trackedPlayers.clear();
+		
+		for (Player player : frame.getLocation().getWorld().getPlayers())
+			((CraftPlayer)player).getHandle().removeQueue.add(frame.getEntity().getEntityId());
+		entry.scanPlayers(server.players);
 	}
 	
 	public PictureDatabase getPictureDatabase() {
@@ -164,7 +188,7 @@ public class FrameManager {
 	}
 	
 	public Frame addFrame(String path, ItemFrame entity) {
-		Frame frame = new Frame(this.getNewFrameID(), entity, path);
+		final Frame frame = new Frame(this.getNewFrameID(), entity, path);
 		//Event
 		CreateFrameEvent customEvent = new CreateFrameEvent(frame, entity);
 		Bukkit.getPluginManager().callEvent(customEvent);
@@ -173,8 +197,13 @@ public class FrameManager {
 		this.frames.put(frame.getId(), frame);
 		entity.setItem(new ItemStack(Material.AIR, 1));
 		
-		this.checkPlayers();
 		this.saveFrames();
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this.p, new Runnable() {
+			@Override
+			public void run() {
+				FrameManager.this.sendFrameToPlayers(frame);
+			}
+		}, 10L);
 		return frame;
 	}
 	
@@ -183,7 +212,12 @@ public class FrameManager {
 	}
 	
 	public Frame getFrame(Location loc) {
-		for (Frame frame : this.frames.values()) {
+		List<Frame> frames = new ArrayList<Frame>();
+		synchronized(this.frames) {
+			frames.addAll(this.frames.values());
+		}
+		
+		for (Frame frame : frames) {
 			if (frame.getLocation().equals(loc))
 				return frame;
 		}
@@ -231,14 +265,14 @@ public class FrameManager {
 				
 				frame = new Frame(this.getNewFrameID(), entity, file.getName());
 				frame.setPicture(file.getName());
-				frame.setCachedPicture(frameImg);
+				frame.sendMapData(null);
 				
 				this.frames.put(getNewFrameID(), frame);
 				frameList.add(frame);
+				this.sendFrameToPlayers(frame);
 			}
 		}
 		
-		this.checkPlayers();
 		this.saveFrames();
 		return frameList;
 	}
@@ -316,54 +350,44 @@ public class FrameManager {
 		}
 	}
 	
-	public void checkPlayers() {
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			this.checkPlayer(player);
-		}
-	}
-	
-	public void checkPlayer(final Player player) {
-		if (this.checkPlayers.contains(player)) return;
-		final Location loc1 = player.getLocation();
-		new Thread() {
-			@Override
-			public void run() {
-				List<Frame> frames = new ArrayList<Frame>();
-				synchronized(FrameManager.this.frames) {
-					frames.addAll(FrameManager.this.frames.values());
-				}
-				for (Frame frame : frames) {
-					if (frame == null) continue; //Asynchronous
-					Location loc2 = frame.getLocation();
+	public void replaceTracker(World world) {
+		WorldServer server = ((CraftWorld)world).getHandle();
+		EntityTracker oldTracker = server.tracker;
+		FakeEntityTracker newTracker = new FakeEntityTracker(server);
+		
+		// Copy
+		try {
+			Field field = EntityTracker.class.getDeclaredField("c");
+			field.setAccessible(true);
+			
+			Set set = (Set) field.get(oldTracker);
+			Set newSet = new HashSet();
+			for (Object obj : set) {
+				EntityTrackerEntry entry = (EntityTrackerEntry) obj;
+				if (entry.tracker instanceof EntityItemFrame && !(entry instanceof FakeEntityTrackerEntry)) {
+					Field uField = EntityTrackerEntry.class.getDeclaredField("u");
+					uField.setAccessible(true);
+					boolean u = (Boolean) uField.get(entry);
 					
-					if (
-						Utils.diff(loc1.getBlockX(), loc2.getBlockX()) <= Config.SEE_RADIUS
-						&& Utils.diff(loc1.getBlockY(), loc2.getBlockY()) <= Config.SEE_RADIUS
-						&& Utils.diff(loc1.getBlockZ(), loc2.getBlockZ()) <= Config.SEE_RADIUS
-					)
-					{
-						synchronized(frame.getSeePlayers()) {
-							if (frame.getSeePlayers().contains(player)) continue;
-							frame.getSeePlayers().add(player);
-						}
-						synchronized(frame) {
-							frame.sendMap(player);
-						}
-					}
-					else
-					{
-						synchronized(frame.getSeePlayers()) {
-							if (frame.getSeePlayers().contains(player))
-								frame.getSeePlayers().remove(player);
-						}
-					}
+					entry = new FakeEntityTrackerEntry(entry.tracker, entry.b, entry.c, u);
+					entry.scanPlayers(server.players);
 				}
-				synchronized(FrameManager.this.checkPlayers) {
-					FrameManager.this.checkPlayers.remove(player);
+				newTracker.trackedEntities.a(entry.tracker.getId(), entry);
+				
+				for (EntityPlayer player : (Set<EntityPlayer>)entry.trackedPlayers) {
+					player.removeQueue.remove(entry.tracker.getId());
 				}
+				
+				newSet.add(entry);
 			}
-		}.start();
-		this.checkPlayers.add(player);
+			newTracker.setPrivateValue("c", newSet);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		server.tracker = newTracker;
+		getLogger().info("Entity Tracker was replaced!");
 	}
 
 }

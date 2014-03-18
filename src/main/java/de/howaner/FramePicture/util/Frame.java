@@ -8,12 +8,11 @@ import org.bukkit.map.MapRenderer;
 
 import de.howaner.FramePicture.FramePicturePlugin;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import net.minecraft.server.v1_7_R1.DataWatcher;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityMetadata;
 import net.minecraft.server.v1_7_R1.PacketPlayOutMap;
+import net.minecraft.server.v1_7_R1.PlayerConnection;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_7_R1.entity.CraftItemFrame;
@@ -26,11 +25,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class Frame {
 	private final int id;
-	private ItemFrame entity;
+	private final ItemFrame entity;
 	private String picture;
-	private BufferedImage cachedPicture;
-	private RenderData cache = null;
-	private final List<Player> seePlayers = new ArrayList<Player>();
+	private PacketPlayOutEntityMetadata cachedItemPacket = null;
+	private PacketPlayOutMap[] cachedDataPacket = null;
 	
 	public Frame(final int id, ItemFrame entity, String picture) {
 		this.id = id;
@@ -60,34 +58,20 @@ public class Frame {
 	
 	public void setPicture(String picture) {
 		this.picture = picture;
-		//TODO: Send to all players
-	}
-	
-	public BufferedImage getCachedPicture() {
-		return this.cachedPicture;
-	}
-	
-	public void setCachedPicture(BufferedImage image) {
-		this.cachedPicture = image;
-	}
-	
-	public List<Player> getSeePlayers() {
-		return this.seePlayers;
+		this.cachedDataPacket = null;
+		this.cachedItemPacket = null;
+		
+		FramePicturePlugin.getManager().sendFrameToPlayers(this);
 	}
 	
 	public BufferedImage getBufferImage() {
-		if (this.cachedPicture == null) {
-			this.cachedPicture = FramePicturePlugin.getManager().getPictureDatabase().loadImage(this.picture);
-			if (Config.CHANGE_SIZE_ENABLED)
-				this.cachedPicture = Utils.scaleImage(cachedPicture, Config.SIZE_WIDTH, Config.SIZE_HEIGHT);
-		}
-		return this.cachedPicture;
+		BufferedImage image = FramePicturePlugin.getManager().getPictureDatabase().loadImage(this.picture);
+		if (Config.CHANGE_SIZE_ENABLED)
+			image = Utils.scaleImage(image, Config.SIZE_WIDTH, Config.SIZE_HEIGHT);
+		return image;
 	}
 	
 	public RenderData getRenderData() {
-		if (this.cache != null)
-			return this.cache;
-		
 		RenderData render = new RenderData();
 		MapRenderer mapRenderer = this.generateRenderer();
 		
@@ -108,40 +92,51 @@ public class Frame {
 		return render;
 	}
 	
-	public void sendMapContent(Player player) {
-		net.minecraft.server.v1_7_R1.EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
-		
-		ItemStack item = new ItemStack(Material.MAP);
-		item.setDurability(this.getMapId());
-		
-		net.minecraft.server.v1_7_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-		nmsItem.count = 1;
-		nmsItem.a(entity);
-		
-		DataWatcher watcher = new DataWatcher(entity);
-		watcher.a(2, 5);
-		watcher.a(3, Byte.valueOf((byte)0));
-		watcher.watch(2, nmsItem);
-		watcher.h(2);
-		
-		PacketPlayOutEntityMetadata packet = new PacketPlayOutEntityMetadata(entity.getId(), watcher, false);
-		
-		((CraftPlayer)player).getHandle().playerConnection.sendPacket(packet);
-	}
-	
-	public void sendMap(Player player) {
-		RenderData data = this.getRenderData();
-		for (int x = 0; x < 128; x++) {
-			byte[] bytes = new byte[''];
-			bytes[1] = ((byte)x);
-			for (int y = 0; y < 128; y++) {
-				bytes[(y + 3)] = data.buffer[(y * 128 + x)];
-			}
-			PacketPlayOutMap packet = new PacketPlayOutMap(this.getMapId(), bytes);
-			((CraftPlayer)player).getHandle().playerConnection.sendPacket(packet);
+	public void sendItemMeta(Player player) {
+		if (this.cachedItemPacket == null) {
+			net.minecraft.server.v1_7_R1.EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
+
+			ItemStack item = new ItemStack(Material.MAP);
+			item.setDurability(this.getMapId());
+
+			net.minecraft.server.v1_7_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+			nmsItem.count = 1;
+			nmsItem.a(entity);
+
+			DataWatcher watcher = new DataWatcher(entity);
+			watcher.a(2, 5);
+			watcher.a(3, Byte.valueOf((byte)0));
+			watcher.watch(2, nmsItem);
+			watcher.h(2);
+
+			this.cachedItemPacket = new PacketPlayOutEntityMetadata(entity.getId(), watcher, false);
 		}
 		
-		this.sendMapContent(player);
+		((CraftPlayer)player).getHandle().playerConnection.sendPacket(this.cachedItemPacket);
+	}
+	
+	public void sendMapData(Player player) {
+		if (this.cachedDataPacket == null) {
+			this.cachedDataPacket = new PacketPlayOutMap[128];
+			
+			RenderData data = this.getRenderData();
+			for (int x = 0; x < 128; x++) {
+				byte[] bytes = new byte[''];
+				bytes[1] = ((byte)x);
+				for (int y = 0; y < 128; y++) {
+					bytes[(y + 3)] = data.buffer[(y * 128 + x)];
+				}
+				
+				this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), bytes);
+			}
+		}
+		
+		if (player != null) {
+			PlayerConnection connection = ((CraftPlayer)player).getHandle().playerConnection;
+			for (int i = 0; i < this.cachedDataPacket.length; i++) {
+				connection.sendPacket(cachedDataPacket[i]);
+			}
+		}
 	}
 	
 	public MapRenderer generateRenderer() {

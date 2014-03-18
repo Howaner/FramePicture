@@ -22,7 +22,6 @@ import de.howaner.FramePicture.util.Utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -30,8 +29,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.world.WorldInitEvent;
 
 public class FrameListener implements Listener {
 	
@@ -284,11 +282,6 @@ public class FrameListener implements Listener {
 		if (Cache.hasCacheCreating(player)) Cache.removeCacheCreating(player);
 		if (Cache.hasCacheMultiCreating(player)) Cache.removeCacheMultiCreating(player);
 		if (Cache.hasCacheGetting(player)) Cache.removeCacheGetting(player);
-		
-		for (Frame frame : this.manager.getFrames()) {
-			if (frame.getSeePlayers().contains(player))
-				frame.getSeePlayers().remove(player);
-		}
 	}
 	
 	@EventHandler (priority = EventPriority.LOW)
@@ -353,27 +346,9 @@ public class FrameListener implements Listener {
 	}
 	
 	@EventHandler
-	public void onPlayerMove(PlayerMoveEvent event) {
-		if (event.isCancelled()) return;
-		if (event.getFrom().getWorld() == event.getTo().getWorld() &&
-				event.getFrom().getBlockX() == event.getTo().getBlockX() &&
-				event.getFrom().getBlockY() == event.getTo().getBlockY() &&
-				event.getFrom().getBlockZ() == event.getTo().getBlockZ())
-			return;
-		
-		Player player = event.getPlayer();
-		this.manager.checkPlayer(player);
-	}
-	
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		final Player player = event.getPlayer();
-		Bukkit.getScheduler().scheduleSyncDelayedTask(this.manager.p, new Runnable() {
-			@Override
-			public void run() {
-				FrameListener.this.manager.checkPlayer(player);
-			}
-		}, Config.FRAME_LOAD_TIME);
+	public void onWorldInit(WorldInitEvent event) {
+		World world = event.getWorld();
+		this.manager.replaceTracker(world);
 	}
 	
 }

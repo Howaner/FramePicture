@@ -10,8 +10,9 @@ import de.howaner.FramePicture.FrameManager;
 import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
-import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 public class FramePictureCommand implements CommandExecutor {
 	
@@ -176,7 +177,10 @@ public class FramePictureCommand implements CommandExecutor {
 				}
 			}
 			//Frames updaten
-			this.manager.checkPlayers();
+			for (World world : Bukkit.getWorlds()) {
+				manager.replaceTracker(world);
+			}
+			
 			Lang.load();
 			manager.getLogger().info("Plugin reloaded!");
 			sender.sendMessage(Lang.PREFIX.getText() + Lang.PLUGIN_RELOAD.getText());
