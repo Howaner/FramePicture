@@ -1,0 +1,29 @@
+# Сообщения из FramePicture.
+PLUGIN_ENABLED: Плагин включён!
+PLUGIN_DISABLED: Плагин отключён!
+NO_PLAYER: '&4Вы не игрок!'
+NO_PERMISSION: '&4Нет разрешения!'
+ALREADY_SELECTION: '&4Вы уже выбрали!'
+CLICK_FRAME: '&3Пожалуйста, нажмите на рамку!'
+CLICK_MULTIFRAME: '&3Пожалуйста, нажмите на верхнюю левую рамку!'
+GETTING_MODE_ENABLED: '&2Getting Mode включён!'
+GETTING_MODE_DISABLED: '&2Getting Mode отключён!'
+CREATING_CANCELLED: '&3Создание отменено!'
+PLUGIN_RELOAD: '&2Плагин перезагружен!'
+FRAME_SET: '&2Рамка с ID: &7#%id&2 создана!'
+MULTIFRAME_SET: '&2%Несколько рамок созданы!'
+NO_FRAMEPICTURE: '&4Это не рамка с картинкой!'
+GET_URL: '&3Информация для рамки:
+
+  &fID: &7#%id
+
+  &fURL: &7%url'
+NO_PICTURE: '&4Это не картинка: %url'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4Вы не имеете достаточно денег!'
+PLEASE_WAIT: '&7Пожалуйста, подождите...'
+FRAME_REMOVED: '&3Рамка удалена!'
+ALREADY_FRAME: '&4Это уже рамка с картинкой!'
+DOWNLOAD_ERROR: '&4Произошла ошибка при загрузке картинки!'
+
+
