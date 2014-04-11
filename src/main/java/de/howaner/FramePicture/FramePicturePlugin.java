@@ -16,18 +16,41 @@ public class FramePicturePlugin extends JavaPlugin {
 	private static FrameManager manager = null;
 	private static FramePicturePlugin instance;
 	private static Economy economy = null;
+	private boolean invalidBukkit = false;
+	
+	private void checkBukkitVersion() {
+		try {
+			Class.forName("net.minecraft.server.v1_7_R1.Packet");
+			this.invalidBukkit = false;
+		} catch (Exception e) {
+			this.invalidBukkit = true;
+			return;
+		}
+	}
 	
 	@Override
 	public void onLoad() {
 		log = this.getLogger();
 		instance = this;
-		manager = new FrameManager(this);
+		
+		this.checkBukkitVersion();
+		if (!this.invalidBukkit)
+			manager = new FrameManager(this);
 	}
 	
 	@Override
 	public void onEnable() {
 		if (log == null) log = this.getLogger();
 		if (instance == null) instance = this;
+		
+		//Check Bukkit Version
+		if (this.invalidBukkit) {
+			log.severe("You use a not-supported bukkit version!");
+			log.severe("This FramePicture version is for Bukkit 1.7.2!");
+			Bukkit.getPluginManager().disablePlugin(this);
+			return;
+		}
+		
 		if (manager == null) manager = new FrameManager(this);
 		this.setupEconomy();
 		manager.onEnable();
@@ -36,7 +59,8 @@ public class FramePicturePlugin extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		manager.onDisable();
+		if (manager != null)
+			manager.onDisable();
 		log.info(Lang.PLUGIN_DISABLED.getText());
 	}
 	

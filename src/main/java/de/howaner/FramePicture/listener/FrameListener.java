@@ -22,6 +22,7 @@ import de.howaner.FramePicture.util.Utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -29,10 +30,10 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.world.WorldInitEvent;
 
 public class FrameListener implements Listener {
-	
 	private FrameManager manager;
 	
 	public FrameListener(FrameManager manager) {
@@ -104,7 +105,8 @@ public class FrameListener implements Listener {
 
 				@Override
 				public void downloadError(Exception e) {
-					player.sendMessage(Lang.PREFIX.getText() + "An error occurred while downloading the Picture!");
+					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText());
+					player.sendMessage(ChatColor.GRAY + "Exists the picture?");
 				}
 			};
 			
@@ -245,6 +247,7 @@ public class FrameListener implements Listener {
 				@Override
 				public void downloadError(Exception e) {
 					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText());
+					player.sendMessage(ChatColor.GRAY + "Exists the picture?");
 				}
 			};
 			
@@ -349,6 +352,12 @@ public class FrameListener implements Listener {
 	public void onWorldInit(WorldInitEvent event) {
 		World world = event.getWorld();
 		this.manager.replaceTracker(world);
+	}
+	
+	@EventHandler
+	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+		Player player = event.getPlayer();
+		this.manager.resendFrames(player);
 	}
 	
 }

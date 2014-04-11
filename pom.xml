@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.howaner</groupId>
 	<artifactId>FramePicture</artifactId>
-	<version>1.6.6</version>
+	<version>1.6.7</version>
 	<name>FramePicture</name>
 	<description>You can set Pictures in a Frame</description>
 	<packaging>jar</packaging>

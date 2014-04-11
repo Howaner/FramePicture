@@ -8,6 +8,11 @@ import org.bukkit.entity.ItemFrame;
 
 public class Utils {
 	
+	public static long getUsedRam() {
+		Runtime runtime = Runtime.getRuntime();
+		return ((runtime.totalMemory() - runtime.freeMemory()) / (1024*1024));
+	}
+	
 	public static byte[] setCanvasPixel(byte[] buffer, int x, int y, byte color) {
 		if ((x < 0) || (y < 0) || (x >= 128) || (y >= 128)) return buffer;
 		if (buffer[(y * 128 + x)] != color)
