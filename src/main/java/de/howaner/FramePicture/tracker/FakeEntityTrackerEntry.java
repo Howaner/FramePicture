@@ -3,16 +3,13 @@ package de.howaner.FramePicture.tracker;
 import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.util.Frame;
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Set;
-import net.minecraft.server.v1_7_R1.Entity;
-import net.minecraft.server.v1_7_R1.EntityHuman;
-import net.minecraft.server.v1_7_R1.EntityItemFrame;
-import net.minecraft.server.v1_7_R1.EntityPlayer;
-import net.minecraft.server.v1_7_R1.EntityTrackerEntry;
-import net.minecraft.server.v1_7_R1.MathHelper;
-import net.minecraft.server.v1_7_R1.Packet;
-import net.minecraft.server.v1_7_R1.PacketPlayOutSpawnEntity;
+import net.minecraft.server.v1_7_R2.Entity;
+import net.minecraft.server.v1_7_R2.EntityItemFrame;
+import net.minecraft.server.v1_7_R2.EntityPlayer;
+import net.minecraft.server.v1_7_R2.EntityTrackerEntry;
+import net.minecraft.server.v1_7_R2.MathHelper;
+import net.minecraft.server.v1_7_R2.Packet;
+import net.minecraft.server.v1_7_R2.PacketPlayOutSpawnEntity;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -33,7 +30,7 @@ public class FakeEntityTrackerEntry extends EntityTrackerEntry {
 		double d1 = entityplayer.locZ - this.zLoc / 32;
 		
 		if ((d0 >= -this.b) && (d0 <= this.b) && (d1 >= -this.b) && (d1 <= this.b)) {
-			if ((!this.trackedPlayers.contains(entityplayer)) && ((d(entityplayer)) || (this.tracker.o))) {
+			if ((!this.trackedPlayers.contains(entityplayer)) && ((d(entityplayer)) || (this.tracker.n))) {
 				EntityItemFrame entity = (EntityItemFrame) this.tracker;
 				Location loc = this.createLocation(entity);
 				Frame frame = FramePicturePlugin.getManager().getFrame(loc);
@@ -47,14 +44,19 @@ public class FakeEntityTrackerEntry extends EntityTrackerEntry {
 				this.trackedPlayers.add(entityplayer);
 				Player player = entityplayer.getBukkitEntity();
 				Packet packet = this.createPacket();
-				
 				entityplayer.playerConnection.sendPacket(packet);
+				
+				this.j = this.tracker.motX;
+				this.k = this.tracker.motY;
+				this.l = this.tracker.motZ;
+				this.i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+				
 				frame.sendMapData(player);
 				frame.sendItemMeta(player);
 			}
 		} else if (this.trackedPlayers.contains(entityplayer)) {
 			this.trackedPlayers.remove(entityplayer);
-			entityplayer.removeQueue.add(Integer.valueOf(this.tracker.getId()));
+			entityplayer.d(this.tracker);
 		}
 	}
 	
@@ -72,17 +74,11 @@ public class FakeEntityTrackerEntry extends EntityTrackerEntry {
 	}
 	
 	private boolean d(EntityPlayer player) {
-		return player.r().getPlayerChunkMap().a(player, this.tracker.ai, this.tracker.ak);
+		return player.r().getPlayerChunkMap().a(player, this.tracker.ah, this.tracker.aj);
 	}
 	
 	public Location createLocation(EntityItemFrame entity) {
 		return entity.getBukkitEntity().getLocation();
-		/*return new Location(
-			entity.world.getWorld(),
-			entity.x,
-			entity.y,
-			entity.z
-		);*/
 	}
 	
 	public <T> T getPrivateValue(String name, Class<T> type) {
