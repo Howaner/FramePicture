@@ -13,6 +13,16 @@
 	
 	<repositories>
 		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<id>Howaner Repo</id>
+			<url>http://repo.howaner.de</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
 			<id>Bukkit Repo</id>
 			<url>http://repo.bukkit.org/content/groups/public/</url>
 		</repository>
