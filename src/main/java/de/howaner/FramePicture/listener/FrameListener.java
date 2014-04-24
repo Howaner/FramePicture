@@ -91,6 +91,14 @@ public class FrameListener implements Listener {
 			PictureDatabase.FinishDownloadSignal signal = new PictureDatabase.FinishDownloadSignal() {
 				@Override
 				public void downloadSuccess(File file) {
+					if (!Utils.isImage(file)) {
+						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
+						
+						if (FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
+							file.delete();
+						}
+						return;
+					}
 					Frame frame = manager.addFrame(file.getName(), entity);
 					if (frame == null) return;
 					
@@ -106,7 +114,7 @@ public class FrameListener implements Listener {
 				@Override
 				public void downloadError(Exception e) {
 					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText());
-					player.sendMessage(ChatColor.GRAY + "Exists the picture?");
+					player.sendMessage(Lang.PREFIX.getText() + ChatColor.GRAY + "Is this a correct picture url? " + ChatColor.RESET + path);
 				}
 			};
 			
@@ -234,6 +242,15 @@ public class FrameListener implements Listener {
 			PictureDatabase.FinishDownloadSignal signal = new PictureDatabase.FinishDownloadSignal() {
 				@Override
 				public void downloadSuccess(File file) {
+					if (!Utils.isImage(file)) {
+						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
+						
+						if (FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
+							file.delete();
+						}
+						return;
+					}
+					
 					List<Frame> frames = manager.addMultiFrames(FrameListener.this.manager.getPictureDatabase().loadImage(file.getName()), frameArray, v, h);
 					if (frames == null) return;
 					
@@ -247,7 +264,7 @@ public class FrameListener implements Listener {
 				@Override
 				public void downloadError(Exception e) {
 					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText());
-					player.sendMessage(ChatColor.GRAY + "Exists the picture?");
+					player.sendMessage(Lang.PREFIX.getText() + ChatColor.GRAY + "Is this a correct picture url? " + ChatColor.RESET + path);
 				}
 			};
 			

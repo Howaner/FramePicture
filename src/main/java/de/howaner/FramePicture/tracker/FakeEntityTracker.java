@@ -3,14 +3,14 @@ package de.howaner.FramePicture.tracker;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Set;
-import net.minecraft.server.v1_7_R2.CrashReport;
-import net.minecraft.server.v1_7_R2.CrashReportSystemDetails;
-import net.minecraft.server.v1_7_R2.Entity;
-import net.minecraft.server.v1_7_R2.EntityItemFrame;
-import net.minecraft.server.v1_7_R2.EntityTracker;
-import net.minecraft.server.v1_7_R2.EntityTrackerEntry;
-import net.minecraft.server.v1_7_R2.ReportedException;
-import net.minecraft.server.v1_7_R2.WorldServer;
+import net.minecraft.server.v1_7_R3.CrashReport;
+import net.minecraft.server.v1_7_R3.CrashReportSystemDetails;
+import net.minecraft.server.v1_7_R3.Entity;
+import net.minecraft.server.v1_7_R3.EntityItemFrame;
+import net.minecraft.server.v1_7_R3.EntityTracker;
+import net.minecraft.server.v1_7_R3.EntityTrackerEntry;
+import net.minecraft.server.v1_7_R3.ReportedException;
+import net.minecraft.server.v1_7_R3.WorldServer;
 import org.apache.logging.log4j.Logger;
 
 public class FakeEntityTracker extends EntityTracker {

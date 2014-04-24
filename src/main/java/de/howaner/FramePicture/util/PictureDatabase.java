@@ -7,16 +7,41 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import javax.imageio.ImageIO;
+import org.bukkit.Bukkit;
 
 public class PictureDatabase {
 	private final Vector<String> whileDownload = new Vector<String>();
 	private final Vector<Thread> threads = new Vector<Thread>();
+	private final List<Runnable> asyncRunnables = new ArrayList<Runnable>();
+	private Integer scheduleID = null;
 	private File outputFolder = new File("plugins/FramePicture/images/");
 	
 	public PictureDatabase() {
 		if (!outputFolder.exists()) outputFolder.mkdirs();
+	}
+	
+	public void startScheduler() {
+		if (this.scheduleID != null) return;
+		this.scheduleID = Bukkit.getScheduler().scheduleSyncRepeatingTask(FramePicturePlugin.getPlugin(), new Runnable() {
+			@Override
+			public void run() {
+				if (!PictureDatabase.this.asyncRunnables.isEmpty()) {
+					for (Runnable run : PictureDatabase.this.asyncRunnables)
+						run.run();
+					PictureDatabase.this.asyncRunnables.clear();
+				}
+			}
+		}, 5L, 5L);
+	}
+	
+	public void stopScheduler() {
+		if (this.scheduleID == null) return;
+		Bukkit.getScheduler().cancelTask(this.scheduleID);
+		this.scheduleID = null;
 	}
 	
 	public File getOutputFolder() {
@@ -133,13 +158,24 @@ public class PictureDatabase {
 					
 					//Call Signal
 					FramePicturePlugin.log.info("Image " + outputFile + " was downloaded!");
-					synchronized(signal) {
-						signal.downloadSuccess(outputFile);
+					final File of = outputFile;
+					synchronized(PictureDatabase.this.asyncRunnables) {
+						PictureDatabase.this.asyncRunnables.add(new Runnable() {
+							@Override
+							public void run() {
+								signal.downloadSuccess(of);
+							}
+						});
 					}
-				} catch (Exception ex) {
+				} catch (final Exception ex) {
 					FramePicturePlugin.log.warning("Cant download Image! Error: " + ex.getMessage());
-					synchronized(signal) {
-						signal.downloadError(ex);
+					synchronized(PictureDatabase.this.asyncRunnables) {
+						PictureDatabase.this.asyncRunnables.add(new Runnable() {
+							@Override
+							public void run() {
+								signal.downloadError(ex);
+							}
+						});
 					}
 					ex.printStackTrace();
 				}
@@ -164,7 +200,6 @@ public class PictureDatabase {
 	}
 	
 	public interface FinishDownloadSignal {
-		
 		public void downloadSuccess(File file);
 		
 		public void downloadError(Exception e);

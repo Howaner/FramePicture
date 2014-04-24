@@ -3,6 +3,8 @@ package de.howaner.FramePicture.util;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 import org.bukkit.Location;
 import org.bukkit.entity.ItemFrame;
 
@@ -58,6 +60,15 @@ public class Utils {
 				return frame;
 		}
 		return null;
+	}
+	
+	public static boolean isImage(File file) {
+		try {
+			BufferedImage image = ImageIO.read(file);
+			return (image != null);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 	
 	public static int diff(int v1, int v2) {

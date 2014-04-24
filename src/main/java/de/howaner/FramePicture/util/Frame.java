@@ -11,19 +11,19 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.logging.Level;
-import net.minecraft.server.v1_7_R2.DataWatcher;
-import net.minecraft.server.v1_7_R2.EntityItemFrame;
-import net.minecraft.server.v1_7_R2.NetworkManager;
-import net.minecraft.server.v1_7_R2.Packet;
-import net.minecraft.server.v1_7_R2.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_7_R2.PacketPlayOutMap;
+import net.minecraft.server.v1_7_R3.DataWatcher;
+import net.minecraft.server.v1_7_R3.EntityItemFrame;
+import net.minecraft.server.v1_7_R3.NetworkManager;
+import net.minecraft.server.v1_7_R3.Packet;
+import net.minecraft.server.v1_7_R3.PacketPlayOutEntityMetadata;
+import net.minecraft.server.v1_7_R3.PacketPlayOutMap;
 import net.minecraft.util.io.netty.channel.Channel;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftItemFrame;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R2.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_7_R2.map.RenderData;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_7_R3.map.RenderData;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -74,7 +74,7 @@ public class Frame {
 	}
 	
 	public void setBukkitItem(ItemStack item) {
-		net.minecraft.server.v1_7_R2.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+		net.minecraft.server.v1_7_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
 		if (nmsStack != null) {
 			nmsStack.count = 1;
 			nmsStack.a(this.getNMSEntity());
@@ -118,7 +118,7 @@ public class Frame {
 			ItemStack item = new ItemStack(Material.MAP);
 			item.setDurability(this.getMapId());
 
-			net.minecraft.server.v1_7_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.server.v1_7_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 			nmsItem.count = 1;
 			nmsItem.a(entity);
 

@@ -24,7 +24,7 @@ public enum Lang {
 	MULTIFRAME_SET("&2%amount Frames created!"),
 	NO_FRAMEPICTURE("&4This is not a Frame Picture!"),
 	GET_URL("&3Infos from Frame:\n&fID: &7#%id\n&fURL: &7%url"),
-	NO_PICTURE("&4This is not a Picture: %url"),
+	NO_PICTURE("&4This is not a Picture!"),
 	PREFIX("&7[&6FramePicture&7] &f"),
 	NOT_ENOUGH_MONEY("&4You haven't enough Money!"),
 	PLEASE_WAIT("&7Please wait.."),

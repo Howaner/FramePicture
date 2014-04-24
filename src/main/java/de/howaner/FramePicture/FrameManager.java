@@ -32,16 +32,16 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
-import net.minecraft.server.v1_7_R2.EntityItemFrame;
-import net.minecraft.server.v1_7_R2.EntityPlayer;
-import net.minecraft.server.v1_7_R2.EntityTracker;
-import net.minecraft.server.v1_7_R2.EntityTrackerEntry;
-import net.minecraft.server.v1_7_R2.WorldServer;
+import net.minecraft.server.v1_7_R3.EntityItemFrame;
+import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.EntityTracker;
+import net.minecraft.server.v1_7_R3.EntityTrackerEntry;
+import net.minecraft.server.v1_7_R3.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_7_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class FrameManager {
@@ -81,6 +81,7 @@ public class FrameManager {
 		Lang.load();
 		//Load Frames
 		this.pictureDB = new PictureDatabase();
+		this.pictureDB.startScheduler();
 		this.loadFrames();
 		this.saveFrames();
 		//Listener
@@ -114,8 +115,10 @@ public class FrameManager {
 	
 	public void onDisable() {
 		this.saveFrames();
-		if (this.pictureDB != null)
+		if (this.pictureDB != null) {
+			this.pictureDB.stopScheduler();
 			this.pictureDB.clear();
+		}
 		Bukkit.getScheduler().cancelTasks(this.p);
 	}
 	
