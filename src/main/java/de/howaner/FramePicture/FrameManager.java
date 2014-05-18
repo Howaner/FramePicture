@@ -151,15 +151,12 @@ public class FrameManager {
 	}
 	
 	public void loadFrame(Frame frame, ItemFrame entity) {
-		System.out.println("Load frame!");
 		if (!this.unloadedFrames.contains(frame)) return;
 		this.unloadedFrames.remove(frame);
 		
 		frame.setEntity(entity);
 		frame.clearCache();
 		this.frames.put(frame.getId(), frame);
-		
-		//this.sendFrameToPlayers(frame);
 	}
 	
 	public void unloadFrame(Frame frame) {

@@ -4,8 +4,6 @@ import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Utils;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.server.v1_7_R3.Entity;
 import net.minecraft.server.v1_7_R3.EntityItemFrame;
 import net.minecraft.server.v1_7_R3.EntityPlayer;
@@ -13,7 +11,6 @@ import net.minecraft.server.v1_7_R3.EntityTrackerEntry;
 import net.minecraft.server.v1_7_R3.MathHelper;
 import net.minecraft.server.v1_7_R3.Packet;
 import net.minecraft.server.v1_7_R3.PacketPlayOutSpawnEntity;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -43,7 +40,6 @@ public class FakeEntityTrackerEntry extends EntityTrackerEntry {
 				if (frame == null) {
 					for (Frame f : FramePicturePlugin.getManager().getUnloadedFrames()) {
 						if (Utils.isSameLocation(f.getLocation(), loc)) {
-							System.out.println("asdsad!!!");
 							FramePicturePlugin.getManager().loadFrame(f, (ItemFrame)entity.getBukkitEntity());
 							frame = f;
 							break;
