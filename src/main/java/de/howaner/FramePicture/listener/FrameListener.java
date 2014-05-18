@@ -23,21 +23,54 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldInitEvent;
 
 public class FrameListener implements Listener {
-	private FrameManager manager;
+	private final FrameManager manager;
 	
 	public FrameListener(FrameManager manager) {
 		this.manager = manager;
+	}
+	
+	/*@EventHandler
+	public void onChunkLoad(ChunkLoadEvent event) {
+		final Chunk chunk = event.getChunk();
+		for (Entity entity : chunk.getEntities()) {
+			if (!(entity instanceof ItemFrame)) continue;
+			List<Frame> framesToLoad = new ArrayList<Frame>();
+			framesToLoad.addAll(this.manager.getUnloadedFrames());
+			
+			for (Frame frame : framesToLoad) {
+				if (Utils.isSameLocation(frame.getLocation(), entity.getLocation())) {
+					this.manager.loadFrame(frame, (ItemFrame)entity);
+					break;
+				}
+			}
+		}
+	}*/
+	
+	@EventHandler
+	public void onChunkUnload(ChunkUnloadEvent event) {
+		Chunk chunk = event.getChunk();
+		for (Entity entity : chunk.getEntities()) {
+			if (!(entity instanceof ItemFrame)) continue;
+			Frame frame = this.manager.getFrame(entity.getLocation());
+			if (frame == null) continue;
+			
+			this.manager.unloadFrame(frame);
+		}
 	}
 	
 	@EventHandler (priority = EventPriority.LOW)

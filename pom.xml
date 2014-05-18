@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.howaner</groupId>
 	<artifactId>FramePicture</artifactId>
-	<version>1.6.9</version>
+	<version>1.7</version>
 	<name>FramePicture</name>
 	<description>You can set Pictures in a Frame</description>
 	<packaging>jar</packaging>
@@ -78,12 +78,12 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.7.8-R0.1-SNAPSHOT</version>
+			<version>1.7.9-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>craftbukkit</artifactId>
-			<version>1.7.8-R0.1-SNAPSHOT</version>
+			<version>1.7.9-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>

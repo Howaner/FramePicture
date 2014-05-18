@@ -30,15 +30,16 @@ import org.bukkit.inventory.ItemStack;
 
 public class Frame {
 	private final int id;
-	private final ItemFrame entity;
+	private ItemFrame entity;
+	private final Location loc;
 	private String picture;
 	private PacketPlayOutEntityMetadata cachedItemPacket = null;
 	private PacketPlayOutMap[] cachedDataPacket = null;
 	
-	public Frame(final int id, ItemFrame entity, String picture) {
+	public Frame(final int id, String picture, Location loc) {
 		this.id = id;
-		this.entity = entity;
 		this.picture = picture;
+		this.loc = loc;
 	}
 	
 	public int getId() {
@@ -46,11 +47,11 @@ public class Frame {
 	}
 	
 	public short getMapId() {
-		return (short)(1024 + this.id);
+		return (short)(2300 + this.id);
 	}
 	
 	public Location getLocation() {
-		return this.entity.getLocation();
+		return this.loc;
 	}
 	
 	public ItemFrame getEntity() {
@@ -63,6 +64,10 @@ public class Frame {
 	
 	public String getPicture() {
 		return this.picture;
+	}
+	
+	public void setEntity(ItemFrame entity) {
+		this.entity = entity;
 	}
 	
 	public void setPicture(String picture) {
@@ -81,6 +86,11 @@ public class Frame {
 		}
 		
 		this.getNMSEntity().getDataWatcher().watch(2, nmsStack);
+	}
+	
+	public void clearCache() {
+		this.cachedDataPacket = null;
+		this.cachedItemPacket = null;
 	}
 	
 	public BufferedImage getBufferImage() {

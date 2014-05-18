@@ -49,6 +49,7 @@ public class FrameManager {
 	public static File framesFile = new File("plugins/FramePicture/frames.yml");
 	private final Map<Integer, Frame> frames = new HashMap<Integer, Frame>();
 	private PictureDatabase pictureDB;
+	private final List<Frame> unloadedFrames = new ArrayList<Frame>();
 	
 	public FrameManager(FramePicturePlugin plugin) {
 		this.p = plugin;
@@ -149,6 +150,36 @@ public class FrameManager {
 		entry.scanPlayers(server.players);
 	}
 	
+	public void loadFrame(Frame frame, ItemFrame entity) {
+		System.out.println("Load frame!");
+		if (!this.unloadedFrames.contains(frame)) return;
+		this.unloadedFrames.remove(frame);
+		
+		frame.setEntity(entity);
+		frame.clearCache();
+		this.frames.put(frame.getId(), frame);
+		
+		//this.sendFrameToPlayers(frame);
+	}
+	
+	public void unloadFrame(Frame frame) {
+		if (frame.getEntity() == null || this.unloadedFrames.contains(frame)) return;
+		
+		WorldServer server = ((CraftWorld)frame.getLocation().getWorld()).getHandle();
+		EntityTracker tracker = server.tracker;
+		EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(frame.getEntity().getEntityId());
+		entry.trackedPlayers.clear();
+		
+		frame.setEntity(null);
+		frame.clearCache();
+		this.frames.remove(frame.getId());
+		this.unloadedFrames.add(frame);
+	}
+	
+	public List<Frame> getUnloadedFrames() {
+		return this.unloadedFrames;
+	}
+	
 	public PictureDatabase getPictureDatabase() {
 		return this.pictureDB;
 	}
@@ -205,12 +236,18 @@ public class FrameManager {
 			if (key > id)
 				id = key;
 		
+		for (Frame frame : this.unloadedFrames)
+			if (frame.getId() > id)
+				id = frame.getId();
+		
 		id += 1;
 		return id;
 	}
 	
 	public Frame addFrame(String path, ItemFrame entity) {
-		final Frame frame = new Frame(this.getNewFrameID(), entity, path);
+		Frame frame = new Frame(this.getNewFrameID(), path, entity.getLocation());
+		frame.setEntity(entity);
+		
 		//Event
 		CreateFrameEvent customEvent = new CreateFrameEvent(frame, entity);
 		Bukkit.getPluginManager().callEvent(customEvent);
@@ -235,8 +272,9 @@ public class FrameManager {
 		}
 		
 		for (Frame frame : frames) {
-			if (frame.getLocation().equals(loc))
+			if (Utils.isSameLocation(frame.getLocation(), loc)) {
 				return frame;
+			}
 		}
 		return null;
 	}
@@ -273,13 +311,14 @@ public class FrameManager {
 				frameImg = Utils.scaleImage(frameImg, 128, 128, false);
 				File file = this.pictureDB.writeImage(frameImg, String.format("Frame%s_%s-%s", globalId, x, y));
 				
-				ItemFrame entity = (y == 0) ? frames[x] : frames[vertical * y + x];
+				ItemFrame entity = frames[vertical * y + x];
 				
 				Frame frame = this.getFrame(entity.getLocation());
 				if (frame != null)
 					this.frames.remove(frame.getId());
 				
-				frame = new Frame(this.getNewFrameID(), entity, file.getName());
+				frame = new Frame(this.getNewFrameID(), file.getName(), entity.getLocation());
+				frame.setEntity(entity);
 				frame.setBukkitItem(new ItemStack(Material.AIR));
 				frame.setPicture(file.getName());
 				frame.sendMapData(null);
@@ -298,6 +337,8 @@ public class FrameManager {
 	public void loadFrames() {
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(framesFile);
 		this.frames.clear();
+		this.unloadedFrames.clear();
+		
 		for (String key : config.getKeys(false)) {
 			ConfigurationSection section = config.getConfigurationSection(key);
 			final int id = Integer.parseInt(key);
@@ -313,35 +354,15 @@ public class FrameManager {
 					section.getInt("Z"));
 			
 			ItemFrame entity = Utils.getFrameAt(loc);
+			String picture = section.getString("Picture");
+			Frame frame = new Frame(id, picture, loc);
+			
 			if (entity == null) {
-				this.getLogger().log(Level.WARNING, "The ItemFrame for Frame #{0] couldn''t found! Is the ItemFrame broken?", id);
-				continue;
-			}
-			final ItemFrame e = entity;
-			
-			String picture;
-			if (section.isString("Path")) {
-				picture = section.getString("Path");
-				if (picture.startsWith("http://") || picture.startsWith("https://") || picture.startsWith("ftp://") || picture.startsWith("file://")) {
-					this.pictureDB.downloadImage(picture, new PictureDatabase.FinishDownloadSignal() {
-						@Override
-						public void downloadSuccess(File file) {
-							Frame frame = new Frame(id, e, file.getName());
-							FrameManager.this.frames.put(id, frame);
-						}
-
-						@Override
-						public void downloadError(Exception e) { }
-					});
-					continue;
-				}
+				this.unloadedFrames.add(frame);
 			} else {
-				picture = section.getString("Picture");
+				frame.setEntity(entity);
+				this.frames.put(frame.getId(), frame);
 			}
-			
-			//Set Frame
-			Frame frame = new Frame(id, entity, picture);
-			this.frames.put(id, frame);
 		}
 		this.getLogger().log(Level.INFO, "Loaded {0} Frames!", this.frames.size());
 	}
@@ -349,7 +370,11 @@ public class FrameManager {
 	/* Save Frames */
 	public void saveFrames() {
 		YamlConfiguration config = new YamlConfiguration();
-		for (Frame frame : this.getFrames()) {
+		List<Frame> framesToSave = new ArrayList<Frame>();
+		framesToSave.addAll(this.frames.values());
+		framesToSave.addAll(this.unloadedFrames);
+		
+		for (Frame frame : framesToSave) {
 			ConfigurationSection section = config.createSection(String.valueOf(frame.getId()));
 			
 			section.set("Picture", frame.getPicture());

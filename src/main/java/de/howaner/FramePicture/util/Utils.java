@@ -62,6 +62,18 @@ public class Utils {
 		return null;
 	}
 	
+	public static boolean isSameLocation(Location loc1, Location loc2) {
+		if (
+			(loc1.getWorld() == loc2.getWorld()) &&
+			(loc1.getBlockX() == loc2.getBlockX()) &&
+			(loc1.getBlockY() == loc2.getBlockY()) &&
+			(loc1.getBlockZ() == loc2.getBlockZ())
+		) {
+			return true;
+		}
+		return false;
+	}
+	
 	public static boolean isImage(File file) {
 		try {
 			BufferedImage image = ImageIO.read(file);

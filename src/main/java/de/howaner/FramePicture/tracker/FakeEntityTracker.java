@@ -1,5 +1,8 @@
 package de.howaner.FramePicture.tracker;
 
+import de.howaner.FramePicture.FramePicturePlugin;
+import de.howaner.FramePicture.util.Frame;
+import de.howaner.FramePicture.util.Utils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Set;
@@ -35,6 +38,7 @@ public class FakeEntityTracker extends EntityTracker {
 				this.setPrivateValue("c", list);
 				
 				this.trackedEntities.a(entity.getId(), fakeEntry);
+				
 				fakeEntry.scanPlayers(this.getPrivateValue("world", WorldServer.class).players);
 			} catch (Throwable throwable) {
 				CrashReport crashreport = CrashReport.a(throwable, "Adding entity to track");
