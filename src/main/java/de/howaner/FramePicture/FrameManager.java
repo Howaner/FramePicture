@@ -1,55 +1,43 @@
 package de.howaner.FramePicture;
 
+import de.howaner.FramePicture.command.FramePictureCommand;
+import de.howaner.FramePicture.event.CreateFrameEvent;
+import de.howaner.FramePicture.event.RemoveFrameEvent;
+import de.howaner.FramePicture.listener.FrameListener;
+import de.howaner.FramePicture.listener.FrameLoadListener;
+import de.howaner.FramePicture.util.Config;
+import de.howaner.FramePicture.util.Frame;
+import de.howaner.FramePicture.util.FrameLoader;
+import de.howaner.FramePicture.util.Lang;
+import de.howaner.FramePicture.util.PictureDatabase;
+import de.howaner.FramePicture.util.Utils;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.ItemStack;
 
-import de.howaner.FramePicture.command.FramePictureCommand;
-import de.howaner.FramePicture.event.CreateFrameEvent;
-import de.howaner.FramePicture.event.RemoveFrameEvent;
-import de.howaner.FramePicture.listener.FrameListener;
-import de.howaner.FramePicture.tracker.FakeEntityTracker;
-import de.howaner.FramePicture.tracker.FakeEntityTrackerEntry;
-import de.howaner.FramePicture.util.Config;
-import de.howaner.FramePicture.util.Frame;
-import de.howaner.FramePicture.util.Lang;
-import de.howaner.FramePicture.util.PictureDatabase;
-import de.howaner.FramePicture.util.Utils;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
-import net.minecraft.server.v1_7_R3.EntityItemFrame;
-import net.minecraft.server.v1_7_R3.EntityPlayer;
-import net.minecraft.server.v1_7_R3.EntityTracker;
-import net.minecraft.server.v1_7_R3.EntityTrackerEntry;
-import net.minecraft.server.v1_7_R3.WorldServer;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
-import org.bukkit.entity.Player;
-
 public class FrameManager {
 	public FramePicturePlugin p;
 	public static File framesFile = new File("plugins/FramePicture/frames.yml");
 	private final Map<Integer, Frame> frames = new HashMap<Integer, Frame>();
 	private PictureDatabase pictureDB;
-	private final List<Frame> unloadedFrames = new ArrayList<Frame>();
+	private FrameLoader frameLoader;
 	
 	public FrameManager(FramePicturePlugin plugin) {
 		this.p = plugin;
@@ -80,6 +68,8 @@ public class FrameManager {
 		Config.save();
 		//Messages
 		Lang.load();
+		//Load FrameLoader
+		this.frameLoader = new FrameLoader(this);
 		//Load Frames
 		this.pictureDB = new PictureDatabase();
 		this.pictureDB.startScheduler();
@@ -87,6 +77,7 @@ public class FrameManager {
 		this.saveFrames();
 		//Listener
 		Bukkit.getPluginManager().registerEvents(new FrameListener(this), this.p);
+		Bukkit.getPluginManager().registerEvents(new FrameLoadListener(this.frameLoader), this.p);
 		//Command
 		p.getCommand("FramePicture").setExecutor(new FramePictureCommand(this));
 		p.getCommand("fp").setExecutor(new FramePictureCommand(this));
@@ -103,15 +94,6 @@ public class FrameManager {
 			Config.WORLDGUARD_ENABLED = false;
 			Config.save();
 		}
-		
-		for (Frame frame : this.getFrames())
-			frame.setBukkitItem(new ItemStack(Material.AIR));
-		
-		if (Config.FRAME_LOAD_ON_START)
-			this.cacheFrames();
-		
-		for (World world : Bukkit.getWorlds())
-			this.replaceTracker(world);
 	}
 	
 	public void onDisable() {
@@ -123,58 +105,8 @@ public class FrameManager {
 		Bukkit.getScheduler().cancelTasks(this.p);
 	}
 	
-	public void cacheFrames() {
-		FramePicturePlugin.log.info("Caching frames ...");
-		long memory = Utils.getUsedRam();
-		for (Frame frame : this.frames.values()) {
-			frame.sendItemMeta(null);
-			frame.sendMapData(null);
-		}
-		FramePicturePlugin.log.info("Cached " + this.frames.size() + " frames!");
-		long usedMemory = Utils.getUsedRam() - memory;
-		if (usedMemory > 0L)
-			FramePicturePlugin.log.info("The frame cache use " + usedMemory + "mb memory!");
-	}
-	
-	public void sendFrameToPlayers(Frame frame) {
-		WorldServer server = ((CraftWorld)frame.getLocation().getWorld()).getHandle();
-		EntityTracker tracker = server.tracker;
-		EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(frame.getEntity().getEntityId());
-		
-		entry.trackedPlayers.clear();
-		
-		/*for (EntityPlayer player : (List<EntityPlayer>)server.players) {
-			if (player.removeQueue.contains(frame.getEntity().getEntityId()))
-				player.removeQueue.remove(frame.getEntity().getEntityId());
-		}*/
-		entry.scanPlayers(server.players);
-	}
-	
-	public void loadFrame(Frame frame, ItemFrame entity) {
-		if (!this.unloadedFrames.contains(frame)) return;
-		this.unloadedFrames.remove(frame);
-		
-		frame.setEntity(entity);
-		frame.clearCache();
-		this.frames.put(frame.getId(), frame);
-	}
-	
-	public void unloadFrame(Frame frame) {
-		if (frame.getEntity() == null || this.unloadedFrames.contains(frame)) return;
-		
-		WorldServer server = ((CraftWorld)frame.getLocation().getWorld()).getHandle();
-		EntityTracker tracker = server.tracker;
-		EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(frame.getEntity().getEntityId());
-		entry.trackedPlayers.clear();
-		
-		frame.setEntity(null);
-		frame.clearCache();
-		this.frames.remove(frame.getId());
-		this.unloadedFrames.add(frame);
-	}
-	
-	public List<Frame> getUnloadedFrames() {
-		return this.unloadedFrames;
+	public FrameLoader getFrameLoader() {
+		return this.frameLoader;
 	}
 	
 	public PictureDatabase getPictureDatabase() {
@@ -191,9 +123,6 @@ public class FrameManager {
 	
 	public boolean isFramePicture(Entity entity) {
 		if (entity.getType() != EntityType.ITEM_FRAME)
-			return false;
-		ItemFrame iFrame = (ItemFrame)entity;
-		if (iFrame.getItem().getType() != Material.MAP)
 			return false;
 		
 		return this.isFramePicture(entity.getLocation());
@@ -219,7 +148,7 @@ public class FrameManager {
 		
 		if (Config.FRAME_REMOVE_IMAGES && this.getFramesWithImage(frame.getPicture()).isEmpty()) {
 			if (this.pictureDB.deleteImage(frame.getPicture())) {
-				this.getLogger().log(Level.INFO, "Removed Image for Frame #{0}.", frame.getId());
+				this.getLogger().log(Level.INFO, "Removed image from frame #{0}.", frame.getId());
 			}
 		}
 		
@@ -229,16 +158,11 @@ public class FrameManager {
 	
 	private int getNewFrameID() {
 		int id = -1;
-		for (int key : this.frames.keySet())
-			if (key > id)
-				id = key;
+		for (int key : this.frames.keySet()) {
+			id = Math.max(id, key);
+		}
 		
-		for (Frame frame : this.unloadedFrames)
-			if (frame.getId() > id)
-				id = frame.getId();
-		
-		id += 1;
-		return id;
+		return id + 1;
 	}
 	
 	public Frame addFrame(String path, ItemFrame entity) {
@@ -251,10 +175,11 @@ public class FrameManager {
 		if (customEvent.isCancelled()) return null;
 		
 		this.frames.put(frame.getId(), frame);
-		frame.setBukkitItem(new ItemStack(Material.AIR));
+		frame.sendMapData(null);
+		//entity.setItem(new ItemStack(Material.AIR));
 		
+		this.frameLoader.sendFramesToPlayers(Arrays.asList(new Frame[] { frame }));
 		this.saveFrames();
-		this.sendFrameToPlayers(frame);
 		return frame;
 	}
 	
@@ -263,17 +188,16 @@ public class FrameManager {
 	}
 	
 	public Frame getFrame(Location loc) {
-		List<Frame> frames = new ArrayList<Frame>();
-		synchronized(this.frames) {
-			frames.addAll(this.frames.values());
-		}
+		Frame found = null;
 		
-		for (Frame frame : frames) {
+		for (Frame frame : this.frames.values()) {
 			if (Utils.isSameLocation(frame.getLocation(), loc)) {
-				return frame;
+				found = frame;
+				break;
 			}
 		}
-		return null;
+		
+		return found;
 	}
 	
 	public List<Frame> getFramesWithImage(String image) {
@@ -309,6 +233,7 @@ public class FrameManager {
 				File file = this.pictureDB.writeImage(frameImg, String.format("Frame%s_%s-%s", globalId, x, y));
 				
 				ItemFrame entity = frames[vertical * y + x];
+				//entity.setItem(new ItemStack(Material.AIR));
 				
 				Frame frame = this.getFrame(entity.getLocation());
 				if (frame != null)
@@ -316,16 +241,15 @@ public class FrameManager {
 				
 				frame = new Frame(this.getNewFrameID(), file.getName(), entity.getLocation());
 				frame.setEntity(entity);
-				frame.setBukkitItem(new ItemStack(Material.AIR));
 				frame.setPicture(file.getName());
 				frame.sendMapData(null);
 				
 				this.frames.put(getNewFrameID(), frame);
 				frameList.add(frame);
-				this.sendFrameToPlayers(frame);
 			}
 		}
 		
+		this.frameLoader.sendFramesToPlayers(frameList);
 		this.saveFrames();
 		return frameList;
 	}
@@ -334,7 +258,6 @@ public class FrameManager {
 	public void loadFrames() {
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(framesFile);
 		this.frames.clear();
-		this.unloadedFrames.clear();
 		
 		for (String key : config.getKeys(false)) {
 			ConfigurationSection section = config.getConfigurationSection(key);
@@ -342,36 +265,30 @@ public class FrameManager {
 			
 			World world =  Bukkit.getWorld(section.getString("World"));
 			if (world == null) {
-				this.getLogger().log(Level.WARNING, "Can''t find World {0} for Frame #{1}!", new Object[] {section.getString("World"), String.valueOf(id) });
+				this.getLogger().log(Level.WARNING, "Can't find World {0} from frame #{1}!", new Object[] {section.getString("World"), String.valueOf(id) });
 				continue;
 			}
+			
 			final Location loc = new Location(world,
 					section.getInt("X"),
 					section.getInt("Y"),
 					section.getInt("Z"));
 			
-			ItemFrame entity = Utils.getFrameAt(loc);
 			String picture = section.getString("Picture");
 			Frame frame = new Frame(id, picture, loc);
-			
-			if (entity == null) {
-				this.unloadedFrames.add(frame);
-			} else {
-				frame.setEntity(entity);
-				this.frames.put(frame.getId(), frame);
-			}
+			this.frames.put(frame.getId(), frame);
 		}
-		this.getLogger().log(Level.INFO, "Loaded {0} Frames!", this.frames.size());
+		this.getLogger().log(Level.INFO, "Loaded {0} frames!", this.frames.size());
+		
+		// Send frames!
+		this.frameLoader.sendFramesToPlayers(this.getFrames());
 	}
 	
 	/* Save Frames */
 	public void saveFrames() {
 		YamlConfiguration config = new YamlConfiguration();
-		List<Frame> framesToSave = new ArrayList<Frame>();
-		framesToSave.addAll(this.frames.values());
-		framesToSave.addAll(this.unloadedFrames);
 		
-		for (Frame frame : framesToSave) {
+		for (Frame frame : this.frames.values()) {
 			ConfigurationSection section = config.createSection(String.valueOf(frame.getId()));
 			
 			section.set("Picture", frame.getPicture());
@@ -384,72 +301,7 @@ public class FrameManager {
 		try {
 			config.save(framesFile);
 		} catch (IOException e) {
-			FramePicturePlugin.log.log(Level.WARNING, "Error while saving the Frames!");
-			e.printStackTrace();
+			FramePicturePlugin.log.log(Level.SEVERE, "Error while saving the frames!", e);
 		}
 	}
-	
-	public void resendFrames(Player player) {
-		WorldServer server = ((CraftWorld)player.getWorld()).getHandle();
-		if (!(server.tracker instanceof FakeEntityTracker)) return; //This world is not a Framepicture World
-		FakeEntityTracker tracker = (FakeEntityTracker)server.tracker;
-		
-		try {
-			Field field = EntityTracker.class.getDeclaredField("c");
-			field.setAccessible(true);
-			
-			Set set = (Set) field.get(tracker);
-			for (Object obj : set) {
-				if (!(obj instanceof FakeEntityTrackerEntry)) continue;
-				FakeEntityTrackerEntry entry = (FakeEntityTrackerEntry) obj;
-				List list = new ArrayList();
-				list.add(((CraftPlayer)player).getHandle());
-				entry.scanPlayers(list);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void replaceTracker(World world) {
-		WorldServer server = ((CraftWorld)world).getHandle();
-		EntityTracker oldTracker = server.tracker;
-		FakeEntityTracker newTracker = new FakeEntityTracker(server);
-		
-		// Copy
-		try {
-			Field field = EntityTracker.class.getDeclaredField("c");
-			field.setAccessible(true);
-			
-			Set set = (Set) field.get(oldTracker);
-			Set newSet = new HashSet();
-			for (Object obj : set) {
-				EntityTrackerEntry entry = (EntityTrackerEntry) obj;
-				if (entry.tracker instanceof EntityItemFrame && !(entry instanceof FakeEntityTrackerEntry)) {
-					Field uField = EntityTrackerEntry.class.getDeclaredField("u");
-					uField.setAccessible(true);
-					boolean u = (Boolean) uField.get(entry);
-					
-					entry = new FakeEntityTrackerEntry(entry.tracker, entry.b, entry.c, u);
-				}
-				newTracker.trackedEntities.a(entry.tracker.getId(), entry);
-				entry.trackedPlayers.clear();
-				for (EntityPlayer player : (Set<EntityPlayer>)entry.trackedPlayers) {
-					if (entry.tracker.getId() < player.removeQueue.size())
-						player.removeQueue.remove(entry.tracker.getId());
-				}
-				entry.scanPlayers(server.players);
-				
-				newSet.add(entry);
-			}
-			newTracker.setPrivateValue("c", newSet);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		server.tracker = newTracker;
-		getLogger().info("Entity Tracker from world " + world.getName() + " was replaced!");
-	}
-
 }

@@ -84,7 +84,7 @@ public class Utils {
 	}
 	
 	public static int diff(int v1, int v2) {
-		return Math.max(v1, v2) - Math.min(v1, v2);
+		return Math.abs(v1 - v2);
 	}
 
 }

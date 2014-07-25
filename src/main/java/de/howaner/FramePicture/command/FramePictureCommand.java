@@ -15,7 +15,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 
 public class FramePictureCommand implements CommandExecutor {
-	
 	private FrameManager manager;
 	
 	public FramePictureCommand(FrameManager manager) {
@@ -165,9 +164,12 @@ public class FramePictureCommand implements CommandExecutor {
 			if (!Config.configFile.exists()) Config.save();
 			Config.load();
 			Config.save();
+			Lang.load();
+			
 			manager.loadFrames();
 			manager.saveFrames();
-			//Geld
+			
+			// Money
 			if (Config.MONEY_ENABLED) {
 				FramePicturePlugin.getPlugin().setupEconomy();
 				if (FramePicturePlugin.getEconomy() == null) {
@@ -176,12 +178,9 @@ public class FramePictureCommand implements CommandExecutor {
 					Config.save();
 				}
 			}
-			//Frames updaten
-			for (World world : Bukkit.getWorlds()) {
-				manager.replaceTracker(world);
-			}
 			
-			Lang.load();
+			this.manager.getFrameLoader().reload();
+			
 			manager.getLogger().info("Plugin reloaded!");
 			sender.sendMessage(Lang.PREFIX.getText() + Lang.PLUGIN_RELOAD.getText());
 			return true;

@@ -20,6 +20,8 @@ public class Config {
 	public static boolean WORLDGUARD_BREAK = true;
 	public static boolean FRAME_REMOVE_IMAGES = false;
 	public static boolean FRAME_LOAD_ON_START = true;
+	public static int FRAMELOADER_CHUNKS = 4;  // You are a plugin developer and you will change the load radius? Change this!
+	public static int JOIN_WAIT_TIME = 7;
 	//File
 	public static File configFile = new File("plugins/FramePicture/config.yml");
 	
