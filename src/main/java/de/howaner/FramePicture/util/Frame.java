@@ -113,6 +113,8 @@ public class Frame {
 	}
 	
 	private void sendItemMeta(Player player) {
+		if (!this.isLoaded()) return;
+		
 		if (this.cachedItemPacket == null) {
 			EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
 
