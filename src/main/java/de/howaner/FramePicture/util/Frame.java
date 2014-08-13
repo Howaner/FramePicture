@@ -1,12 +1,8 @@
 package de.howaner.FramePicture.util;
 
+import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.render.ImageRenderer;
 import de.howaner.FramePicture.render.TextRenderer;
-
-import org.bukkit.Bukkit;
-import org.bukkit.map.MapRenderer;
-
-import de.howaner.FramePicture.FramePicturePlugin;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -20,6 +16,7 @@ import net.minecraft.server.v1_7_R3.PacketPlayOutMap;
 import net.minecraft.util.io.netty.channel.Channel;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftItemFrame;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemStack;
@@ -27,19 +24,26 @@ import org.bukkit.craftbukkit.v1_7_R3.map.RenderData;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MapRenderer;
 
 public class Frame {
 	private final int id;
 	private ItemFrame entity;
+	private final BlockFace face;
 	private final Location loc;
-	private String picture;
+	private final String picture;
 	private PacketPlayOutEntityMetadata cachedItemPacket = null;
 	private PacketPlayOutMap[] cachedDataPacket = null;
 	
-	public Frame(final int id, String picture, Location loc) {
+	public Frame(final int id, String picture, Location loc, BlockFace face) {
 		this.id = id;
 		this.picture = picture;
 		this.loc = loc;
+		this.face = face;
+	}
+	
+	public boolean isLoaded() {
+		return (this.entity != null);
 	}
 	
 	public int getId() {
@@ -58,8 +62,8 @@ public class Frame {
 		return this.entity;
 	}
 	
-	public EntityItemFrame getNMSEntity() {
-		return ((CraftItemFrame)this.entity).getHandle();
+	public BlockFace getFacing() {
+		return this.face;
 	}
 	
 	public String getPicture() {
@@ -68,24 +72,7 @@ public class Frame {
 	
 	public void setEntity(ItemFrame entity) {
 		this.entity = entity;
-	}
-	
-	public void setPicture(String picture) {
-		this.picture = picture;
-		this.cachedDataPacket = null;
 		this.cachedItemPacket = null;
-		
-		FramePicturePlugin.getManager().sendFrameToPlayers(this);
-	}
-	
-	public void setBukkitItem(ItemStack item) {
-		net.minecraft.server.v1_7_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
-		if (nmsStack != null) {
-			nmsStack.count = 1;
-			nmsStack.a(this.getNMSEntity());
-		}
-		
-		this.getNMSEntity().getDataWatcher().watch(2, nmsStack);
 	}
 	
 	public void clearCache() {
@@ -95,22 +82,21 @@ public class Frame {
 	
 	public BufferedImage getBufferImage() {
 		BufferedImage image = FramePicturePlugin.getManager().getPictureDatabase().loadImage(this.picture);
-		if (Config.CHANGE_SIZE_ENABLED)
+		if (image != null && Config.CHANGE_SIZE_ENABLED)
 			image = Utils.scaleImage(image, Config.SIZE_WIDTH, Config.SIZE_HEIGHT);
 		return image;
 	}
 	
-	public RenderData getRenderData() {
+	private RenderData getRenderData() {
 		RenderData render = new RenderData();
 		MapRenderer mapRenderer = this.generateRenderer();
 		
 		Arrays.fill(render.buffer, (byte)0);
 		render.cursors.clear();
 		
-		Player player = (Bukkit.getOnlinePlayers().length == 0) ? null : Bukkit.getOnlinePlayers()[0];
 		FakeMapCanvas canvas = new FakeMapCanvas();
 		canvas.setBase(render.buffer);
-		mapRenderer.render(canvas.getMapView(), canvas, player);
+		mapRenderer.render(canvas.getMapView(), canvas, null);
 		
 		byte[] buf = canvas.getBuffer();
 		for (int i = 0; i < buf.length; i++) {
@@ -121,9 +107,14 @@ public class Frame {
 		return render;
 	}
 	
-	public void sendItemMeta(Player player) {
+	public void sendTo(Player player) {
+		this.sendItemMeta(player);
+		this.sendMapData(player);
+	}
+	
+	private void sendItemMeta(Player player) {
 		if (this.cachedItemPacket == null) {
-			EntityItemFrame entity = this.getNMSEntity();
+			EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
 
 			ItemStack item = new ItemStack(Material.MAP);
 			item.setDurability(this.getMapId());
@@ -145,7 +136,7 @@ public class Frame {
 			((CraftPlayer)player).getHandle().playerConnection.sendPacket(this.cachedItemPacket);
 	}
 	
-	public void sendMapData(Player player) {
+	private void sendMapData(Player player) {
 		if (this.cachedDataPacket == null) {
 			this.cachedDataPacket = new PacketPlayOutMap[128];
 			
@@ -154,7 +145,7 @@ public class Frame {
 				byte[] bytes = new byte[''];
 				bytes[1] = ((byte)x);
 				for (int y = 0; y < 128; y++) {
-					bytes[(y + 3)] = data.buffer[(y * 128 + x)];
+					bytes[(y + 3)] = data.buffer[y * 128 + x];
 				}
 				
 				this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), bytes);
@@ -162,30 +153,14 @@ public class Frame {
 		}
 		
 		if (player != null)
-			this.sendPacketsFast(player, this.cachedDataPacket);
-	}
-	
-	public void sendPacketsFast(Player player, Packet[] packets) {
-		try {
-			NetworkManager netty = ((CraftPlayer)player).getHandle().playerConnection.networkManager;
-			Field field = NetworkManager.class.getDeclaredField("m");
-			field.setAccessible(true);
-			Channel channel = (Channel)field.get(netty);
-			
-			for (Packet packet : packets) {
-				channel.write(packet);
-			}
-			channel.flush();
-		} catch (Exception e) {
-			FramePicturePlugin.log.log(Level.WARNING, "Cant't send packets!", e);
-		}
+			PacketSender.addPacketToPlayer(player, this.cachedDataPacket);
 	}
 	
 	public MapRenderer generateRenderer() {
 		BufferedImage image = Frame.this.getBufferImage();
 		if (image == null) {
-			FramePicturePlugin.log.warning("The Url \"" + Frame.this.getPicture() + "\" from Frame #" + Frame.this.getId() + " don't exists!");
-			return new TextRenderer("Can't read Image!", this.getId());
+			FramePicturePlugin.log.warning("The picture \"" + Frame.this.getPicture() + "\" from frame #" + Frame.this.getId() + " doesn't exists!");
+			return new TextRenderer("Can't read image!", this.getId());
 		}
 		
 		ImageRenderer renderer = new ImageRenderer(image);

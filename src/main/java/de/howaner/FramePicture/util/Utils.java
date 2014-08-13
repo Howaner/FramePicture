@@ -1,25 +1,78 @@
 package de.howaner.FramePicture.util;
 
+import de.howaner.FramePicture.FramePicturePlugin;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
+import java.lang.reflect.Field;
+import java.util.logging.Level;
+import net.minecraft.server.v1_7_R3.EntityItemFrame;
+import net.minecraft.server.v1_7_R3.NetworkManager;
+import net.minecraft.server.v1_7_R3.Packet;
+import net.minecraft.util.io.netty.channel.Channel;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemStack;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class Utils {
 	
-	public static long getUsedRam() {
+	public static void setFrameItemWithoutSending(ItemFrame entity, ItemStack item) {
+		EntityItemFrame nmsEntity = ((CraftItemFrame)entity).getHandle();
+		
+		net.minecraft.server.v1_7_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+		if (nmsStack != null) {
+			nmsStack.count = 1;
+			nmsStack.a(nmsEntity);
+		}
+		
+		nmsEntity.getDataWatcher().watch(2, nmsStack);
+	}
+	
+	public static ItemFrame getItemFrameFromChunk(Chunk chunk, Location loc, BlockFace face) {
+		for (Entity entity : chunk.getEntities()) {
+			if ((entity.getType() == EntityType.ITEM_FRAME) && isSameLocation(entity.getLocation(), loc)) {
+				ItemFrame frameEntity = (ItemFrame)entity;
+				if ((face == null) || (frameEntity.getFacing() == face)) {
+					return frameEntity;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static long getUsedMemory() {
 		Runtime runtime = Runtime.getRuntime();
 		return ((runtime.totalMemory() - runtime.freeMemory()) / (1024*1024));
 	}
 	
 	public static byte[] setCanvasPixel(byte[] buffer, int x, int y, byte color) {
 		if ((x < 0) || (y < 0) || (x >= 128) || (y >= 128)) return buffer;
-		if (buffer[(y * 128 + x)] != color)
-			buffer[(y * 128 + x)] = color;
+		buffer[(y * 128 + x)] = color;
 		return buffer;
+	}
+	
+	public static void sendPacketsFast(Player player, Packet[] packets) {
+		try {
+			NetworkManager netty = ((CraftPlayer)player).getHandle().playerConnection.networkManager;
+			Field field = NetworkManager.class.getDeclaredField("m");
+			field.setAccessible(true);
+			Channel channel = (Channel)field.get(netty);
+			
+			for (Packet packet : packets) {
+				channel.write(packet);
+			}
+			channel.flush();
+		} catch (Exception e) {
+			FramePicturePlugin.log.log(Level.WARNING, "Cant't send packets!", e);
+		}
 	}
 	
 	public static BufferedImage scaleImage(BufferedImage image, int width, int height) {
@@ -52,16 +105,6 @@ public class Utils {
 		return image.getSubimage(posX, posY, width, height);
 	}
 	
-	public static ItemFrame getFrameAt(Location loc) {
-		for (ItemFrame frame : loc.getWorld().getEntitiesByClass(ItemFrame.class)) {
-			if (frame.getLocation().getBlockX() == loc.getBlockX() &&
-				frame.getLocation().getBlockY() == loc.getBlockY() &&
-				frame.getLocation().getBlockZ() == loc.getBlockZ())
-				return frame;
-		}
-		return null;
-	}
-	
 	public static boolean isSameLocation(Location loc1, Location loc2) {
 		if (
 			(loc1.getWorld() == loc2.getWorld()) &&
@@ -74,17 +117,8 @@ public class Utils {
 		return false;
 	}
 	
-	public static boolean isImage(File file) {
-		try {
-			BufferedImage image = ImageIO.read(file);
-			return (image != null);
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
 	public static int diff(int v1, int v2) {
-		return Math.max(v1, v2) - Math.min(v1, v2);
+		return Math.abs(v1 - v2);
 	}
 
 }

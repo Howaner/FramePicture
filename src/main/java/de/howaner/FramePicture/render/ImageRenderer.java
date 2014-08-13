@@ -29,9 +29,8 @@ public class ImageRenderer extends MapRenderer {
 	@Override
 	public void render(final MapView view, final MapCanvas canvas, final Player player) {
 		if (this.rendered) return;
-		//this.removeCursors(canvas);
 		this.rendered = true;
-		canvas.drawImage(ImageRenderer.this.imageX, ImageRenderer.this.imageY, ImageRenderer.this.image);
+		canvas.drawImage(this.imageX, this.imageY, this.image);
 	}
 
 }

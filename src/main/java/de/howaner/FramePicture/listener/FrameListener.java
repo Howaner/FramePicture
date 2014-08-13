@@ -1,41 +1,47 @@
 package de.howaner.FramePicture.listener;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-
 import de.howaner.FramePicture.FrameManager;
 import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.util.Cache;
 import de.howaner.FramePicture.util.Config;
 import de.howaner.FramePicture.util.Frame;
 import de.howaner.FramePicture.util.Lang;
+import de.howaner.FramePicture.util.PacketSender;
 import de.howaner.FramePicture.util.PictureDatabase;
 import de.howaner.FramePicture.util.Utils;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
+import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.EntityTracker;
+import net.minecraft.server.v1_7_R3.EntityTrackerEntry;
+import net.minecraft.server.v1_7_R3.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.event.world.WorldInitEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class FrameListener implements Listener {
 	private final FrameManager manager;
@@ -44,64 +50,30 @@ public class FrameListener implements Listener {
 		this.manager = manager;
 	}
 	
-	/*@EventHandler
-	public void onChunkLoad(ChunkLoadEvent event) {
-		final Chunk chunk = event.getChunk();
-		for (Entity entity : chunk.getEntities()) {
-			if (!(entity instanceof ItemFrame)) continue;
-			List<Frame> framesToLoad = new ArrayList<Frame>();
-			framesToLoad.addAll(this.manager.getUnloadedFrames());
-			
-			for (Frame frame : framesToLoad) {
-				if (Utils.isSameLocation(frame.getLocation(), entity.getLocation())) {
-					this.manager.loadFrame(frame, (ItemFrame)entity);
-					break;
-				}
-			}
-		}
-	}*/
-	
-	@EventHandler
-	public void onChunkUnload(ChunkUnloadEvent event) {
-		Chunk chunk = event.getChunk();
-		for (Entity entity : chunk.getEntities()) {
-			if (!(entity instanceof ItemFrame)) continue;
-			Frame frame = this.manager.getFrame(entity.getLocation());
-			if (frame == null) continue;
-			
-			this.manager.unloadFrame(frame);
-		}
-	}
-	
-	@EventHandler (priority = EventPriority.LOW)
-	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-		//Check
-		if (event.isCancelled()) return;
-		if (event.getRightClicked().getType() != EntityType.ITEM_FRAME) return;
+	@EventHandler (priority = EventPriority.HIGH)
+	public void onPlayerInteract(PlayerInteractEntityEvent event) {
+		if (event.isCancelled() || (event.getRightClicked().getType() != EntityType.ITEM_FRAME)) return;
 		final ItemFrame entity = (ItemFrame) event.getRightClicked();
 		final Player player = event.getPlayer();
-		Frame frame = this.manager.getFrame(entity.getLocation());
-		if (frame != null)
-			event.setCancelled(true);
 		
-		///CREATING
+		// SINGLE CREATING
 		if (Cache.hasCacheCreating(player)) {
 			event.setCancelled(true);
-			//Money
+			
 			if (Config.MONEY_ENABLED) {
-				if (FramePicturePlugin.getEconomy().getBalance(player.getName()) < Config.CREATE_PRICE) {
+				if (FramePicturePlugin.getEconomy().getBalance(player) < Config.CREATE_PRICE) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
 					Cache.removeCacheCreating(player);
 					return;
 				}
 			}
-			//Permission
+			
 			if (!player.hasPermission("FramePicture.set")) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
+				Cache.removeCacheCreating(player);
 				return;
 			}
 			
-			//WorldGuard Check
 			if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BUILD && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
 				RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 				LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
@@ -111,29 +83,35 @@ public class FrameListener implements Listener {
 				}
 			}
 			
-			//Is a Item in the Frame?
+			Frame frame = this.manager.getFrame(entity);
 			if (frame != null) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME.getText());
 				return;
 			}
 			
 			final String path = Cache.getCacheCreating(player);
-			Cache.removeCacheCreating(player);
-			
-			//Download Image
 			PictureDatabase.FinishDownloadSignal signal = new PictureDatabase.FinishDownloadSignal() {
 				@Override
-				public void downloadSuccess(File file) {
-					if (!Utils.isImage(file)) {
+				public void downloadSuccess(File file, boolean wasLocal) {
+					if (Config.MONEY_ENABLED) {
+						if (FramePicturePlugin.getEconomy().getBalance(player) < Config.CREATE_PRICE) {
+							if (!wasLocal && FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
+								file.delete();
+							}
+							player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
+							return;
+						}
+					}
+					
+					Frame frame = FrameListener.this.manager.addFrame(file.getName(), entity);
+					if (frame == null) {
 						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
 						
-						if (FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
+						if (!wasLocal && FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
 							file.delete();
 						}
 						return;
 					}
-					Frame frame = manager.addFrame(file.getName(), entity);
-					if (frame == null) return;
 					
 					player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_SET.getText()
 						.replace("%url", path)
@@ -141,42 +119,42 @@ public class FrameListener implements Listener {
 						.replace("%name", file.getName()));
 					
 					if (Config.MONEY_ENABLED)
-						FramePicturePlugin.getEconomy().withdrawPlayer(player.getName(), Config.CREATE_PRICE);
+						FramePicturePlugin.getEconomy().withdrawPlayer(player, Config.CREATE_PRICE);
 				}
 
 				@Override
 				public void downloadError(Exception e) {
-					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText());
-					player.sendMessage(Lang.PREFIX.getText() + ChatColor.GRAY + "Is this a correct picture url? " + ChatColor.RESET + path);
+					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText().replace("%url", path));
 				}
 			};
 			
+			Cache.removeCacheCreating(player);
+			
 			if (new File(this.manager.getPictureDatabase().getOutputFolder(), path).exists()) {
-				signal.downloadSuccess(new File(this.manager.getPictureDatabase().getOutputFolder(), path));
+				signal.downloadSuccess(new File(this.manager.getPictureDatabase().getOutputFolder(), path), true);
 			} else {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.PLEASE_WAIT.getText());
 				this.manager.getPictureDatabase().downloadImage(path, signal);
 			}
 		}
 		
-		///MULTIFRAME CREATING
-		if (Cache.hasCacheMultiCreating(player)) {
+		// MULTI CREATING
+		else if (Cache.hasCacheMultiCreating(player)) {
 			event.setCancelled(true);
-			//Money
+			
 			if (Config.MONEY_ENABLED) {
-				if (FramePicturePlugin.getEconomy().getBalance(player.getName()) < Config.CREATE_PRICE) {
+				if (FramePicturePlugin.getEconomy().getBalance(player) < Config.CREATE_PRICE) {
 					player.sendMessage(Lang.NOT_ENOUGH_MONEY.getText());
 					Cache.removeCacheCreating(player);
 					return;
 				}
 			}
-			//Permission
+			
 			if (!player.hasPermission("FramePicture.multiset")) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
 				return;
 			}
 			
-			//WorldGuard Check
 			if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BUILD && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
 				RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 				LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
@@ -184,12 +162,6 @@ public class FrameListener implements Listener {
 					player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
 					return;
 				}
-			}
-			
-			//Is a Item in the Frame?
-			if (frame != null) {
-				player.sendMessage(Lang.PREFIX.getText() + Lang.ALREADY_FRAME.getText());
-				return;
 			}
 			
 			int moveX, moveZ;
@@ -231,7 +203,7 @@ public class FrameListener implements Listener {
 			int x = entity.getLocation().getBlockX();
 			int y = entity.getLocation().getBlockY();
 			int z = entity.getLocation().getBlockZ();
-			ItemFrame cacheFrame = Utils.getFrameAt(new Location(world, x, y, z));
+			ItemFrame cacheFrame = Utils.getItemFrameFromChunk(entity.getLocation().getChunk(), new Location(world, x, y, z), entity.getFacing());
 			
 			int vertical = 0, horizontal = 1;
 			while (cacheFrame != null) {
@@ -239,7 +211,8 @@ public class FrameListener implements Listener {
 				vertical++;
 				x += moveX;
 				z += moveZ;
-				cacheFrame = Utils.getFrameAt(new Location(world, x, y, z));
+				Location loc = new Location(world, x, y, z);
+				cacheFrame = Utils.getItemFrameFromChunk(loc.getChunk(), loc, entity.getFacing());
 			}
 			
 			boolean success = true;
@@ -250,7 +223,8 @@ public class FrameListener implements Listener {
 				z = entity.getLocation().getBlockZ();
 				
 				for (int i = 0; i < vertical; i++) {
-					ItemFrame cEntity = Utils.getFrameAt(new Location(world, x, y, z));
+					Location loc = new Location(world, x, y, z);
+					ItemFrame cEntity = Utils.getItemFrameFromChunk(loc.getChunk(), loc, entity.getFacing());
 					if (cEntity == null) {
 						success = false;
 						break;
@@ -258,7 +232,6 @@ public class FrameListener implements Listener {
 					x += moveX;
 					z += moveZ;
 					frameList.add(cEntity);
-					//frameList.add(vertical * horizontal + i, cEntity);
 				}
 				if (success)
 					horizontal++;
@@ -274,50 +247,51 @@ public class FrameListener implements Listener {
 			//Download Image
 			PictureDatabase.FinishDownloadSignal signal = new PictureDatabase.FinishDownloadSignal() {
 				@Override
-				public void downloadSuccess(File file) {
-					if (!Utils.isImage(file)) {
+				public void downloadSuccess(File file, boolean wasLocal) {
+					BufferedImage image = FrameListener.this.manager.getPictureDatabase().loadImage(file.getName());
+					if (image == null) {
 						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PICTURE.getText().replace("%url", path));
 						
-						if (FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
+						if (!wasLocal && FrameListener.this.manager.getFramesWithImage(file.getName()).isEmpty()) {
 							file.delete();
 						}
 						return;
 					}
 					
-					List<Frame> frames = manager.addMultiFrames(FrameListener.this.manager.getPictureDatabase().loadImage(file.getName()), frameArray, v, h);
+					List<Frame> frames = manager.addMultiFrames(image, frameArray, v, h);
 					if (frames == null) return;
 					
 					player.sendMessage(Lang.PREFIX.getText() + Lang.MULTIFRAME_SET.getText()
 						.replace("%amount", String.valueOf(frames.size())));
 					
 					if (Config.MONEY_ENABLED)
-						FramePicturePlugin.getEconomy().withdrawPlayer(player.getName(), Config.CREATE_PRICE);
+						FramePicturePlugin.getEconomy().withdrawPlayer(player, Config.CREATE_PRICE);
 				}
 
 				@Override
 				public void downloadError(Exception e) {
-					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText());
-					player.sendMessage(Lang.PREFIX.getText() + ChatColor.GRAY + "Is this a correct picture url? " + ChatColor.RESET + path);
+					player.sendMessage(Lang.PREFIX.getText() + Lang.DOWNLOAD_ERROR.getText().replace("%url", path));
 				}
 			};
 			
 			if (new File(this.manager.getPictureDatabase().getOutputFolder(), path).exists()) {
-				signal.downloadSuccess(new File(this.manager.getPictureDatabase().getOutputFolder(), path));
+				signal.downloadSuccess(new File(this.manager.getPictureDatabase().getOutputFolder(), path), true);
 			} else {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.PLEASE_WAIT.getText());
 				this.manager.getPictureDatabase().downloadImage(path, signal);
 			}
 		}
 		
-		///GETTING
-		if (Cache.hasCacheGetting(player)) {
+		// GETTING
+		else if (Cache.hasCacheGetting(player)) {
 			event.setCancelled(true);
-			//Permission
+			
 			if (!player.hasPermission("FramePicture.get")) {
 				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
 				return;
 			}
-			//Frame
+			
+			Frame frame = this.manager.getFrame(entity);
 			if (frame == null) {
 				player.sendMessage(Lang.NO_FRAMEPICTURE.getText());
 				return;
@@ -327,6 +301,10 @@ public class FrameListener implements Listener {
 				.replace("%id", String.valueOf(frame.getId())));
 			Cache.removeCacheGetting(player);
 		}
+		
+		else if (this.manager.getFrame(entity) != null) {
+			event.setCancelled(true);
+		}
 	}
 	
 	@EventHandler
@@ -335,79 +313,132 @@ public class FrameListener implements Listener {
 		if (Cache.hasCacheCreating(player)) Cache.removeCacheCreating(player);
 		if (Cache.hasCacheMultiCreating(player)) Cache.removeCacheMultiCreating(player);
 		if (Cache.hasCacheGetting(player)) Cache.removeCacheGetting(player);
+		if (PacketSender.packetsToSend.containsKey(player)) PacketSender.packetsToSend.remove(player);
 	}
 	
-	@EventHandler (priority = EventPriority.LOW)
+	@EventHandler (priority = EventPriority.HIGH)
 	public void onBlockBreak(BlockBreakEvent event) {
-		if (event.isCancelled()) return;
 		Player player = event.getPlayer();
 		Block block = event.getBlock();
+		if (event.isCancelled()) return;
 		
-		Frame[] frames = new Frame[] {
-			this.manager.getFrame(block.getLocation()),
-			this.manager.getFrame(block.getRelative(BlockFace.NORTH).getLocation()),
-			this.manager.getFrame(block.getRelative(BlockFace.SOUTH).getLocation()),
-			this.manager.getFrame(block.getRelative(BlockFace.EAST).getLocation()),
-			this.manager.getFrame(block.getRelative(BlockFace.WEST).getLocation())
-		};
+		RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
+		LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
 		
-		for (Frame frame : frames) {
-			if (frame == null) continue;
-			if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
-				RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
-				LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
+		BlockFace[] faces = { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
+		
+		if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+			for (BlockFace face : faces) {
+				Location loc = block.getRelative(face).getLocation();
+				BlockFace frameFace = face.getOppositeFace();
+
+				Frame frame = this.manager.getFrame(loc, frameFace);
+				if (frame == null) continue;
+
 				if (!rm.getApplicableRegions(frame.getLocation()).canBuild(localPlayer)) {
 					player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
 					event.setCancelled(true);
 					return;
 				}
 			}
-			
-			this.manager.removeFrame(frame.getId());
-			player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_REMOVED.getText().replace("%id", String.valueOf(frame.getId())));
 		}
 	}
 	
-	@EventHandler (priority = EventPriority.LOW)
+	@EventHandler (priority = EventPriority.HIGH)
 	public void onHangingBreak(HangingBreakEvent event) {
-		if (event.isCancelled()) return;
-		if (event.getEntity().getType() != EntityType.ITEM_FRAME) return;
-		Frame frame = this.manager.getFrame(event.getEntity().getLocation());
+		if (event.isCancelled() || (event.getEntity().getType() != EntityType.ITEM_FRAME)) return;
+		ItemFrame entity = (ItemFrame)event.getEntity();
+		Frame frame = this.manager.getFrame(entity);
 		if (frame == null) return;
 		
+		Player player = null;
 		if (event instanceof HangingBreakByEntityEvent) {
-			if (((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
-				Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();
-				//WorldGuard Check
-				if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
-					RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
-					LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
-					if (!rm.getApplicableRegions(frame.getLocation()).canBuild(localPlayer)) {
-						player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
-						event.setCancelled(true);
-						return;
+			Entity remover = ((HangingBreakByEntityEvent)event).getRemover();
+			
+			switch (remover.getType()) {
+				case PLAYER:
+				{
+					player = (Player)remover;
+					break;
+				}
+				case ARROW:
+				case EGG:
+				case ENDER_PEARL:
+				case FIREBALL:
+				case SILVERFISH:
+				case SNOWBALL:
+				case THROWN_EXP_BOTTLE:
+				case SPLASH_POTION:
+				case WITHER_SKULL:
+				{
+					Projectile projectile = (Projectile)remover;
+					if ((projectile.getShooter() != null) && (projectile.getShooter() instanceof Player)) {
+						player = (Player)projectile.getShooter();
 					}
+					break;
+				}
+				default:
+				{
+					event.setCancelled(true);
+					return;
 				}
 			}
 		}
+			
+		if ((player != null) && Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard"))
+		{
+			RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
+			LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
+			if (!rm.getApplicableRegions(frame.getLocation()).canBuild(localPlayer)) {
+				player.sendMessage(Lang.PREFIX.getText() + Lang.NO_PERMISSION.getText());
+				event.setCancelled(true);
+				return;
+			}
+		}
 		
-		this.manager.removeFrame(frame.getId());
-		if (event instanceof HangingBreakByEntityEvent && ((HangingBreakByEntityEvent)event).getRemover().getType() == EntityType.PLAYER) {
-			Player player = (Player) ((HangingBreakByEntityEvent)event).getRemover();
+		this.manager.removeFrame(frame);
+		if (player != null)
 			player.sendMessage(Lang.PREFIX.getText() + Lang.FRAME_REMOVED.getText().replace("%id", String.valueOf(frame.getId())));
+		
+		for (Entity e : entity.getNearbyEntities(32.0, 32.0, 32.0)) {
+			if (e.getType() != EntityType.PLAYER) continue;
+			Player p = (Player)e;
+			this.sendFrameDestroy(p, entity.getEntityId());
 		}
 	}
 	
 	@EventHandler
-	public void onWorldInit(WorldInitEvent event) {
-		World world = event.getWorld();
-		this.manager.replaceTracker(world);
+	public void onEntityDeath(EntityDeathEvent event) {
+		if (event.getEntity().getType() == EntityType.ITEM_FRAME) {
+			ItemFrame entity = (ItemFrame)event.getEntity();
+			Frame frame = this.manager.getFrame(entity);
+			if (frame != null) {
+				this.manager.removeFrame(frame);
+			}
+		}
 	}
 	
-	@EventHandler
-	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-		Player player = event.getPlayer();
-		this.manager.resendFrames(player);
+	public void sendFrameDestroy(Player player, int entityID) {
+		try {
+			PacketContainer destroyPacket = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+			destroyPacket.getIntegerArrays().write(0, new int[] { entityID });
+			ProtocolLibrary.getProtocolManager().sendServerPacket(player, destroyPacket);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
+	
+	/*@EventHandler
+	public void onPlayerFish(PlayerFishEvent event) {
+		if (event.isCancelled()) return;
+		
+		if (event.getCaught().getType() == EntityType.ITEM_FRAME) {
+			ItemFrame entity = (ItemFrame)event.getCaught();
+			Frame frame = this.manager.getFrame(entity);
+			if (frame != null) {
+				event.setCancelled(true);
+			}
+		}
+	}*/
 	
 }

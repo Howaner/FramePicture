@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.howaner</groupId>
 	<artifactId>FramePicture</artifactId>
-	<version>1.7</version>
+	<version>1.7.1</version>
 	<name>FramePicture</name>
 	<description>You can set Pictures in a Frame</description>
 	<packaging>jar</packaging>
@@ -33,6 +33,11 @@
 		<repository>
 			<id>sk89q Repo</id>
 			<url>http://maven.sk89q.com/repo/</url>
+		</repository>
+		<repository>
+			<id>comphenix-rep</id>
+			<name>Comphenix Repository</name>
+			<url>http://repo.comphenix.net/content/groups/public</url>
 		</repository>
 	</repositories>
 	
@@ -78,17 +83,22 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.7.9-R0.1-SNAPSHOT</version>
+			<version>1.7.9-R0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>craftbukkit</artifactId>
-			<version>1.7.9-R0.1-SNAPSHOT</version>
+			<version>1.7.9-R0.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.comphenix.protocol</groupId>
+			<artifactId>ProtocolLib</artifactId>
+			<version>3.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
 			<artifactId>Vault</artifactId>
-			<version>1.2.32</version>
+			<version>1.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sk89q</groupId>

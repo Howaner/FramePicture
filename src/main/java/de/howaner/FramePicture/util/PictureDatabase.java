@@ -9,16 +9,15 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import javax.imageio.ImageIO;
 import org.bukkit.Bukkit;
 
 public class PictureDatabase {
-	private final Vector<String> whileDownload = new Vector<String>();
-	private final Vector<Thread> threads = new Vector<Thread>();
+	private final List<String> whileDownload = new ArrayList<String>();
+	private final List<Thread> threads = new ArrayList<Thread>();
 	private final List<Runnable> asyncRunnables = new ArrayList<Runnable>();
 	private Integer scheduleID = null;
-	private File outputFolder = new File("plugins/FramePicture/images/");
+	private final File outputFolder = new File("plugins/FramePicture/images/");
 	
 	public PictureDatabase() {
 		if (!outputFolder.exists()) outputFolder.mkdirs();
@@ -163,7 +162,7 @@ public class PictureDatabase {
 						PictureDatabase.this.asyncRunnables.add(new Runnable() {
 							@Override
 							public void run() {
-								signal.downloadSuccess(of);
+								signal.downloadSuccess(of, false);
 							}
 						});
 					}
@@ -200,7 +199,7 @@ public class PictureDatabase {
 	}
 	
 	public interface FinishDownloadSignal {
-		public void downloadSuccess(File file);
+		public void downloadSuccess(File file, boolean wasLocal);
 		
 		public void downloadError(Exception e);
 	}

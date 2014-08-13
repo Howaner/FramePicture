@@ -1,8 +1,9 @@
 name: FramePicture
-version: 1.7
+version: 1.7.1
 author: Howaner
 website: http://howaner.de
 description: You can set Pictures in Frames
+depend: [ProtocolLib]
 softdepend: [Vault,WorldGuard,Multiverse-Core]
 main: de.howaner.FramePicture.FramePicturePlugin
 
@@ -23,7 +24,7 @@ permissions:
     default: op
   FramePicture.set:
     description: Permission to place a Picture in a Frame
-    default: true
+    default: op
   FramePicture.multiset:
     description: Permission to create a Picture Wand
     default: op

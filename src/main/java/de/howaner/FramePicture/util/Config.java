@@ -20,6 +20,7 @@ public class Config {
 	public static boolean WORLDGUARD_BREAK = true;
 	public static boolean FRAME_REMOVE_IMAGES = false;
 	public static boolean FRAME_LOAD_ON_START = true;
+	public static long FRAME_LOADING_DELAY = 2L;
 	//File
 	public static File configFile = new File("plugins/FramePicture/config.yml");
 	
@@ -38,6 +39,8 @@ public class Config {
 			FRAME_REMOVE_IMAGES = config.getBoolean("Frame.RemoveImageWhenFrameDestroy");
 		if (config.isBoolean("Frame.LoadOnStart"))
 			FRAME_LOAD_ON_START = config.getBoolean("Frame.CacheOnStart");
+		if (config.isLong("Frame.LoadingDelay"))
+			FRAME_LOADING_DELAY = Math.max(config.getLong("Frame.LoadingDelay"), 1L);
 		
 		FramePicturePlugin.log.info("Configuration loaded!");
 	}
@@ -55,6 +58,7 @@ public class Config {
 		config.set("WorldGuard.ProtectBreak", WORLDGUARD_BREAK);
 		config.set("Frame.RemoveImageWhenFrameDestroy", FRAME_REMOVE_IMAGES);
 		config.set("Frame.CacheOnStart", FRAME_LOAD_ON_START);
+		config.set("Frame.LoadingDelay", FRAME_LOADING_DELAY);
 		try {
 			config.save(configFile);
 		} catch (Exception e) {
