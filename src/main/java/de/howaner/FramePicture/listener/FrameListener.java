@@ -18,15 +18,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.server.v1_7_R3.EntityPlayer;
-import net.minecraft.server.v1_7_R3.EntityTracker;
-import net.minecraft.server.v1_7_R3.EntityTrackerEntry;
-import net.minecraft.server.v1_7_R3.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -39,7 +34,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -427,18 +421,5 @@ public class FrameListener implements Listener {
 			e.printStackTrace();
 		}
 	}
-	
-	/*@EventHandler
-	public void onPlayerFish(PlayerFishEvent event) {
-		if (event.isCancelled()) return;
-		
-		if (event.getCaught().getType() == EntityType.ITEM_FRAME) {
-			ItemFrame entity = (ItemFrame)event.getCaught();
-			Frame frame = this.manager.getFrame(entity);
-			if (frame != null) {
-				event.setCancelled(true);
-			}
-		}
-	}*/
 	
 }

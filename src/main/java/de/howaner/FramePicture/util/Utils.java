@@ -6,16 +6,16 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
-import net.minecraft.server.v1_7_R3.EntityItemFrame;
-import net.minecraft.server.v1_7_R3.NetworkManager;
-import net.minecraft.server.v1_7_R3.Packet;
+import net.minecraft.server.v1_7_R4.EntityItemFrame;
+import net.minecraft.server.v1_7_R4.NetworkManager;
+import net.minecraft.server.v1_7_R4.Packet;
 import net.minecraft.util.io.netty.channel.Channel;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftItemFrame;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -27,7 +27,7 @@ public class Utils {
 	public static void setFrameItemWithoutSending(ItemFrame entity, ItemStack item) {
 		EntityItemFrame nmsEntity = ((CraftItemFrame)entity).getHandle();
 		
-		net.minecraft.server.v1_7_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+		net.minecraft.server.v1_7_R4.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
 		if (nmsStack != null) {
 			nmsStack.count = 1;
 			nmsStack.a(nmsEntity);

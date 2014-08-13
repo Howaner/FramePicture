@@ -4,23 +4,18 @@ import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.render.ImageRenderer;
 import de.howaner.FramePicture.render.TextRenderer;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.logging.Level;
-import net.minecraft.server.v1_7_R3.DataWatcher;
-import net.minecraft.server.v1_7_R3.EntityItemFrame;
-import net.minecraft.server.v1_7_R3.NetworkManager;
-import net.minecraft.server.v1_7_R3.Packet;
-import net.minecraft.server.v1_7_R3.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_7_R3.PacketPlayOutMap;
-import net.minecraft.util.io.netty.channel.Channel;
+import net.minecraft.server.v1_7_R4.DataWatcher;
+import net.minecraft.server.v1_7_R4.EntityItemFrame;
+import net.minecraft.server.v1_7_R4.PacketPlayOutEntityMetadata;
+import net.minecraft.server.v1_7_R4.PacketPlayOutMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftItemFrame;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_7_R3.map.RenderData;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_7_R4.map.RenderData;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -113,21 +108,23 @@ public class Frame {
 	}
 	
 	private void sendItemMeta(Player player) {
+		if (!this.isLoaded()) return;
+		
 		if (this.cachedItemPacket == null) {
 			EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
 
 			ItemStack item = new ItemStack(Material.MAP);
 			item.setDurability(this.getMapId());
 
-			net.minecraft.server.v1_7_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 			nmsItem.count = 1;
 			nmsItem.a(entity);
 
 			DataWatcher watcher = new DataWatcher(entity);
-			watcher.a(2, 5);
-			watcher.a(3, Byte.valueOf((byte)0));
+			watcher.add(2, 5);
+			watcher.a(3, (byte)0);
 			watcher.watch(2, nmsItem);
-			watcher.h(2);
+			watcher.update(2);
 
 			this.cachedItemPacket = new PacketPlayOutEntityMetadata(entity.getId(), watcher, false);
 		}
