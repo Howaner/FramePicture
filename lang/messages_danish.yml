@@ -1,0 +1,18 @@
+# The Messages from FramePicture.
+PLUGIN_ENABLED: Plugin aktiveret.
+PLUGIN_DISABLED: Plugin deaktiveret.
+NO_PLAYER: '&4Du er ikke en spiller.'
+NO_PERMISSION: '&4Ingen tilladelse.'
+ALREADY_SELECTION: '&4Du har allerede valgt.'
+CLICK_FRAME: '&3Klik på din ramme.'
+GETTING_MODE_ENABLED: '&2Input Mode aktiveret.'
+GETTING_MODE_DISABLED: '&2Input Mode deaktiveret.'
+CREATING_CANCELLED: '&3Oprettelse afbrudt.'
+PLUGIN_RELOAD: '&2Plugin genstartet.'
+FRAME_SET: '&2Ramme sættes til url &f%url'
+NO_FRAMEPICTURE: '&4Dette er ikke et ramme-billede.'
+GET_URL: '&3URL er &f%url'
+NO_PICTURE: '&4Dette er ikke et billede: %url'
+PREFIX: '&7[&6RammeBillede&7] &f'
+NOT_ENOUGH_MONEY: '&4Du har ikke råd til dette.'
+ALREADY_FRAME_ITEM: '&4Der er allerede et billede i den ramme.'
