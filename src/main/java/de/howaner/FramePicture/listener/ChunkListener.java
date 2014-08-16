@@ -22,7 +22,7 @@ public class ChunkListener implements Listener {
 	@EventHandler
 	public void onChunkLoad(ChunkLoadEvent event) {
 		Chunk chunk = event.getChunk();
-		List<Frame> frames = this.manager.getFramesInChunk(chunk.getX(), chunk.getZ());
+		List<Frame> frames = this.manager.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		List<Frame> framesToRemove = new ArrayList<Frame>();
 		
 		for (Frame frame : frames) {
@@ -40,7 +40,7 @@ public class ChunkListener implements Listener {
 				frame.clearCache();
 				frames.remove(frame);
 			}
-			this.manager.setFramesInChunk(chunk.getX(), chunk.getZ(), frames);
+			this.manager.setFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), frames);
 		}
 	}
 	
@@ -48,7 +48,7 @@ public class ChunkListener implements Listener {
 	public void onChunkUnload(ChunkUnloadEvent event) {
 		if (event.isCancelled()) return;
 		Chunk chunk = event.getChunk();
-		List<Frame> frames = this.manager.getFramesInChunk(chunk.getX(), chunk.getZ());
+		List<Frame> frames = this.manager.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		
 		for (Frame frame : frames) {
 			frame.setEntity(null);

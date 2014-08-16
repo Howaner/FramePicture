@@ -117,9 +117,9 @@ public class FrameManager {
 		if (frame == null) return;
 		
 		Chunk chunk = frame.getLocation().getChunk();
-		List<Frame> frameList = this.getFramesInChunk(chunk.getX(), chunk.getZ());
+		List<Frame> frameList = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		frameList.remove(frame);
-		this.setFramesInChunk(chunk.getX(), chunk.getZ(), frameList);
+		this.setFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), frameList);
 		
 		if (Config.FRAME_REMOVE_IMAGES && this.getFramesWithImage(frame.getPicture()).isEmpty()) {
 			if (this.pictureDB.deleteImage(frame.getPicture())) {
@@ -130,13 +130,13 @@ public class FrameManager {
 		this.saveFrames();
 	}
 	
-	public void setFramesInChunk(int chunkX, int chunkZ, List<Frame> frames) {
-		this.frames.put(String.format("%d|%d", chunkX, chunkZ), frames);
+	public void setFramesInChunk(String world, int chunkX, int chunkZ, List<Frame> frames) {
+		this.frames.put(String.format("%s|%d|%d", world, chunkX, chunkZ), frames);
 	}
 	
 	public Frame getFrame(Location loc, BlockFace face) {
 		Chunk chunk = loc.getChunk();
-		List<Frame> frameList = this.getFramesInChunk(chunk.getX(), chunk.getZ());
+		List<Frame> frameList = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		
 		for (Frame frame : frameList) {
 			if (!frame.isLoaded()) continue;
@@ -148,8 +148,8 @@ public class FrameManager {
 		return null;
 	}
 	
-	public List<Frame> getFramesInChunk(int chunkX, int chunkZ) {
-		List<Frame> frameList = this.frames.get(String.format("%d|%d", chunkX, chunkZ));
+	public List<Frame> getFramesInChunk(String world, int chunkX, int chunkZ) {
+		List<Frame> frameList = this.frames.get(String.format("%s|%d|%d", world, chunkX, chunkZ));
 		if (frameList == null) {
 			frameList = new ArrayList<Frame>();
 		}
@@ -157,7 +157,7 @@ public class FrameManager {
 	}
 	
 	public Frame getFrameWithEntityID(Chunk chunk, int entityId) {
-		List<Frame> frameList = this.getFramesInChunk(chunk.getX(), chunk.getZ());
+		List<Frame> frameList = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		for (Frame frame : frameList) {
 			if (frame.isLoaded() && (frame.getEntity().getEntityId() == entityId)) {
 				return frame;
@@ -201,13 +201,11 @@ public class FrameManager {
 		}
 		
 		Chunk chunk = entity.getLocation().getChunk();
-		List<Frame> frameList = this.getFramesInChunk(chunk.getX(), chunk.getZ());
+		List<Frame> frameList = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		frameList.add(frame);
-		this.setFramesInChunk(chunk.getX(), chunk.getZ(), frameList);
+		this.setFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), frameList);
 		
-		this.frames.put(String.format("%d|%d", chunk.getX(), chunk.getZ()), frameList);
 		Utils.setFrameItemWithoutSending(entity, new ItemStack(Material.AIR));
-		
 		this.sendFrame(frame);
 		this.saveFrames();
 		return frame;
@@ -236,7 +234,7 @@ public class FrameManager {
 	public Frame getFrame(ItemFrame entity) {
 		for (List<Frame> frameList : this.frames.values()) {
 			for (Frame frame : frameList) {
-				if (frame.isLoaded() && (frame.getEntity().getEntityId() == entity.getEntityId())) {
+				if (frame.isLoaded() && (frame.getLocation().getWorld() == entity.getWorld()) && (frame.getEntity().getEntityId() == entity.getEntityId())) {
 					return frame;
 				}
 			}
@@ -272,9 +270,9 @@ public class FrameManager {
 				frame.setEntity(entity);
 				
 				Chunk chunk = frame.getLocation().getChunk();
-				List<Frame> chunkFrames = this.getFramesInChunk(chunk.getX(), chunk.getZ());
+				List<Frame> chunkFrames = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 				chunkFrames.add(frame);
-				this.setFramesInChunk(chunk.getX(), chunk.getZ(), chunkFrames);
+				this.setFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), chunkFrames);
 				
 				globalId++;
 				frameList.add(frame);
@@ -322,9 +320,9 @@ public class FrameManager {
 				}
 			}
 			
-			List<Frame> frameList = this.getFramesInChunk(chunk.getX(), chunk.getZ());
+			List<Frame> frameList = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 			frameList.add(frame);
-			this.setFramesInChunk(chunk.getX(), chunk.getZ(), frameList);
+			this.setFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), frameList);
 		}
 		FramePicturePlugin.log.log(Level.INFO, "Loaded {0} frames!", this.getFrames().size());
 	}

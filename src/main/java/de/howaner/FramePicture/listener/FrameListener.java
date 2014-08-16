@@ -34,6 +34,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -399,6 +400,11 @@ public class FrameListener implements Listener {
 			Player p = (Player)e;
 			this.sendFrameDestroy(p, entity.getEntityId());
 		}
+	}
+	
+	@EventHandler
+	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+		PacketSender.packetsToSend.remove(event.getPlayer());
 	}
 	
 	@EventHandler
