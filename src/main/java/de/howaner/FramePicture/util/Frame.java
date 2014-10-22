@@ -111,7 +111,7 @@ public class Frame {
 		if (!this.isLoaded()) return;
 		
 		if (this.cachedItemPacket == null) {
-			EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
+			final EntityItemFrame entity = ((CraftItemFrame)this.entity).getHandle();
 
 			ItemStack item = new ItemStack(Material.MAP);
 			item.setDurability(this.getMapId());
@@ -121,10 +121,13 @@ public class Frame {
 			nmsItem.a(entity);
 
 			DataWatcher watcher = new DataWatcher(entity);
-			watcher.add(2, 5);
+			watcher.add(2, 5); //1.7
+			watcher.add(8, 5); //1.8
 			watcher.a(3, (byte)0);
-			watcher.watch(2, nmsItem);
-			watcher.update(2);
+			watcher.watch(2, nmsItem); //1.7
+			watcher.watch(8, nmsItem); //1.8
+			watcher.update(2); //1.7
+			watcher.update(8); //1.8
 
 			this.cachedItemPacket = new PacketPlayOutEntityMetadata(entity.getId(), watcher, false);
 		}
@@ -145,7 +148,7 @@ public class Frame {
 					bytes[(y + 3)] = data.buffer[y * 128 + x];
 				}
 				
-				this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), bytes);
+				this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), bytes, (byte)3);
 			}
 		}
 		

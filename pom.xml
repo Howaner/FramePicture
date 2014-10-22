@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.howaner</groupId>
-	<artifactId>FramePicture</artifactId>
-	<version>1.7.3</version>
+	<artifactId>FramePicture-1.8</artifactId>
+	<version>1.7.4</version>
 	<name>FramePicture</name>
 	<description>You can set Pictures in a Frame</description>
 	<packaging>jar</packaging>
@@ -21,10 +21,6 @@
 			<id>Howaner Repo</id>
 			<url>http://repo.howaner.de</url>
 			<layout>default</layout>
-		</repository>
-		<repository>
-			<id>Bukkit Repo</id>
-			<url>http://repo.bukkit.org/content/groups/public/</url>
 		</repository>
 		<repository>
 			<id>vault-repo</id>
@@ -81,19 +77,14 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.7.10-R0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>craftbukkit</artifactId>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot</artifactId>
 			<version>1.7.10-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
-			<artifactId>ProtocolLib</artifactId>
-			<version>3.4.0</version>
+			<artifactId>ProtocolLib-Spigot</artifactId>
+			<version>3.6.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
