@@ -1,4 +1,5 @@
 FramePicture
 ============
 
-A Bukkit Plugin, who can set a Picture in a Frame Block
+DevBukkit: http://dev.bukkit.org/bukkit-plugins/framepicture
+
