@@ -1,6 +1,7 @@
 package de.howaner.FramePicture.listener;
 
 import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.ListeningWhitelist;
@@ -10,9 +11,12 @@ import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
 import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.util.Frame;
+import de.howaner.FramePicture.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -25,30 +29,68 @@ public class FramePacketListener implements PacketListener {
 			final Player player = pe.getPlayer();
 			
 			int entityID = packet.getIntegers().read(0);
-			int posX = packet.getIntegers().read(1) / 32;
-			int posY = packet.getIntegers().read(2) / 32;
-			int posZ = packet.getIntegers().read(3) / 32;
+			int posX = (int) Math.floor((double)packet.getIntegers().read(1) / 32.0);
+			int posY = (int) Math.floor((double)packet.getIntegers().read(2) / 32.0);
+			int posZ = (int) Math.floor((double)packet.getIntegers().read(3) / 32.0);
 			int entityType = packet.getIntegers().read(9);
+			int direction = packet.getIntegers().read(10);
 
 			// Check if the entity is a item frame (Id 71)
-			if (entityType == 71) {
-				Chunk chunk = new Location(player.getWorld(), posX, posY, posZ).getChunk();
-				if (!chunk.isLoaded()) {
+			if (entityType != 71) {
+				return;
+			}
+
+			switch (direction) {
+				case 0: posZ++; break;
+				case 1: posX--; break;
+				case 2: posZ--; break;
+				case 3: posX++; break;
+			}
+
+			Location loc = new Location(player.getWorld(), posX, posY, posZ);
+			Chunk chunk = loc.getChunk();
+			if (!chunk.isLoaded()) {
+				return;
+			}
+
+			Frame frame = FramePicturePlugin.getManager().getFrameWithEntityID(chunk, entityID);
+			if (frame == null) {
+				// Search the frame in the chunk.
+				BlockFace facing = this.convertDirectionToBlockFace(direction);
+				ItemFrame entity = Utils.getItemFrameFromChunk(chunk, loc, facing);
+				if (entity == null) {
 					return;
 				}
 
-				final Frame frame = FramePicturePlugin.getManager().getFrameWithEntityID(chunk, entityID);
+				frame = FramePicturePlugin.getManager().getFrame(loc, facing);
 				if (frame == null) {
 					return;
 				}
-				
-				Bukkit.getScheduler().runTaskLater(FramePicturePlugin.getPlugin(), new Runnable() {
-					@Override
-					public void run() {
-						frame.sendTo(player);
-					}
-				}, 10L);
+				frame.setEntity(entity);
 			}
+
+			final Frame frameToSend = frame;
+			Bukkit.getScheduler().runTaskLater(FramePicturePlugin.getPlugin(), new Runnable() {
+				@Override
+				public void run() {
+					frameToSend.sendTo(player);
+				}
+			}, 10L);
+		}
+	}
+
+	private BlockFace convertDirectionToBlockFace(int direction) {
+		switch (direction) {
+			case 0:
+				return BlockFace.SOUTH;
+			case 1:
+				return BlockFace.WEST;
+			case 2:
+				return BlockFace.NORTH;
+			case 3:
+				return BlockFace.EAST;
+			default:
+				return BlockFace.NORTH;
 		}
 	}
 
