@@ -315,14 +315,14 @@ public class FrameListener implements Listener {
 	public void onBlockBreak(BlockBreakEvent event) {
 		Player player = event.getPlayer();
 		Block block = event.getBlock();
-		if (event.isCancelled()) return;
+		if (event.isCancelled() || !Config.WORLDGUARD_ENABLED || !Config.WORLDGUARD_BREAK) return;
 		
 		RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());
 		LocalPlayer localPlayer = FramePicturePlugin.getWorldGuard().wrapPlayer(player);
 		
 		BlockFace[] faces = { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
 		
-		if (Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard")) {
+		if (!player.hasPermission("FramePicture.ignoreWorldGuard")) {
 			for (BlockFace face : faces) {
 				Location loc = block.getRelative(face).getLocation();
 				BlockFace frameFace = face.getOppositeFace();
