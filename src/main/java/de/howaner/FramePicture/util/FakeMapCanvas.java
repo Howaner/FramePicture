@@ -2,8 +2,8 @@ package de.howaner.FramePicture.util;
 
 import java.lang.reflect.Field;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_7_R4.map.CraftMapCanvas;
-import org.bukkit.craftbukkit.v1_7_R4.map.CraftMapView;
+import org.bukkit.craftbukkit.v1_8_R1.map.CraftMapCanvas;
+import org.bukkit.craftbukkit.v1_8_R1.map.CraftMapView;
 
 public class FakeMapCanvas extends CraftMapCanvas {
 	

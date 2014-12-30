@@ -4,18 +4,20 @@ import de.howaner.FramePicture.FramePicturePlugin;
 import de.howaner.FramePicture.render.ImageRenderer;
 import de.howaner.FramePicture.render.TextRenderer;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
-import net.minecraft.server.v1_7_R4.DataWatcher;
-import net.minecraft.server.v1_7_R4.EntityItemFrame;
-import net.minecraft.server.v1_7_R4.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_7_R4.PacketPlayOutMap;
+import net.minecraft.server.v1_8_R1.DataWatcher;
+import net.minecraft.server.v1_8_R1.EntityItemFrame;
+import net.minecraft.server.v1_8_R1.MapIcon;
+import net.minecraft.server.v1_8_R1.PacketPlayOutEntityMetadata;
+import net.minecraft.server.v1_8_R1.PacketPlayOutMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftItemFrame;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_7_R4.map.RenderData;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_8_R1.map.RenderData;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -116,7 +118,7 @@ public class Frame {
 			ItemStack item = new ItemStack(Material.MAP);
 			item.setDurability(this.getMapId());
 
-			net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.server.v1_8_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 			nmsItem.count = 1;
 			nmsItem.a(entity);
 
@@ -147,8 +149,22 @@ public class Frame {
 				for (int y = 0; y < 128; y++) {
 					bytes[(y + 3)] = data.buffer[y * 128 + x];
 				}
-				
-				this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), bytes, (byte)3);
+
+				byte[] newBytes = Arrays.copyOfRange(bytes, 3, bytes.length);
+				//this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), (byte) 3, new ArrayList<MapIcon>(), newBytes, bytes[1], bytes[2], 1, bytes.length - 3);
+
+				PacketPlayOutMap packet = new PacketPlayOutMap(this.getMapId(), (byte) 3, new ArrayList<MapIcon>(), newBytes, bytes[1], bytes[2], 0, bytes.length - 3);
+				Utils.setPrivateField(packet, "f", 1);
+				Utils.setPrivateField(packet, "h", newBytes);
+				/*Utils.setPrivateField(packet, "a", this.getMapId());
+				Utils.setPrivateField(packet, "b", (byte) 3);
+				Utils.setPrivateField(packet, "c", new ArrayList<MapIcon>());
+				Utils.setPrivateField(packet, "d", newBytes);
+				Utils.setPrivateField(packet, "e", bytes[1]);
+				Utils.setPrivateField(packet, "f", bytes[2]);
+				Utils.setPrivateField(packet, "g", 1);
+				Utils.setPrivateField(packet, "h", bytes.length - 3);*/
+				this.cachedDataPacket[x] = packet;
 			}
 		}
 		

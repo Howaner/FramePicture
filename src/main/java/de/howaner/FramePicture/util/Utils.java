@@ -1,21 +1,21 @@
 package de.howaner.FramePicture.util;
 
 import de.howaner.FramePicture.FramePicturePlugin;
+import io.netty.channel.Channel;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
-import net.minecraft.server.v1_7_R4.EntityItemFrame;
-import net.minecraft.server.v1_7_R4.NetworkManager;
-import net.minecraft.server.v1_7_R4.Packet;
-import net.minecraft.util.io.netty.channel.Channel;
+import net.minecraft.server.v1_8_R1.EntityItemFrame;
+import net.minecraft.server.v1_8_R1.NetworkManager;
+import net.minecraft.server.v1_8_R1.Packet;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftItemFrame;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -27,13 +27,13 @@ public class Utils {
 	public static void setFrameItemWithoutSending(ItemFrame entity, ItemStack item) {
 		EntityItemFrame nmsEntity = ((CraftItemFrame)entity).getHandle();
 		
-		net.minecraft.server.v1_7_R4.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+		net.minecraft.server.v1_8_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
 		if (nmsStack != null) {
 			nmsStack.count = 1;
 			nmsStack.a(nmsEntity);
 		}
 		
-		nmsEntity.getDataWatcher().watch(2, nmsStack);
+		nmsEntity.getDataWatcher().watch(8, nmsStack);
 	}
 	
 	public static ItemFrame getItemFrameFromChunk(Chunk chunk, Location loc, BlockFace face) {
@@ -62,11 +62,12 @@ public class Utils {
 	public static void sendPacketsFast(Player player, Packet[] packets) {
 		try {
 			NetworkManager netty = ((CraftPlayer)player).getHandle().playerConnection.networkManager;
-			Field field = NetworkManager.class.getDeclaredField("m");
+			Field field = NetworkManager.class.getDeclaredField("i");
 			field.setAccessible(true);
 			Channel channel = (Channel)field.get(netty);
 			
 			for (Packet packet : packets) {
+				if (packet == null) continue;
 				channel.write(packet);
 			}
 			channel.flush();
@@ -119,6 +120,18 @@ public class Utils {
 	
 	public static int diff(int v1, int v2) {
 		return Math.abs(v1 - v2);
+	}
+
+	public static void setPrivateField(Object instance, String fieldName, Object value) {
+		try {
+			Class c = instance.getClass();
+
+			Field field = c.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(instance, value);
+		} catch (Exception ex) {
+			FramePicturePlugin.getPlugin().getLogger().log(Level.WARNING, "Can't set private field", ex);
+		}
 	}
 
 }

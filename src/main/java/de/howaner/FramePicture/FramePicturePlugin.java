@@ -20,7 +20,7 @@ public class FramePicturePlugin extends JavaPlugin {
 	
 	private void checkBukkitVersion() {
 		try {
-			Class.forName("net.minecraft.server.v1_7_R4.Packet");
+			Class.forName("net.minecraft.server.v1_8_R1.Packet");
 			this.invalidBukkit = false;
 		} catch (Exception e) {
 			this.invalidBukkit = true;
@@ -46,7 +46,7 @@ public class FramePicturePlugin extends JavaPlugin {
 		//Check Bukkit Version
 		if (this.invalidBukkit) {
 			log.severe("You use a not-supported bukkit version!");
-			log.severe("This FramePicture version is for Bukkit 1.7.10!");
+			log.severe("This FramePicture version is for Spigot 1.8!");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}

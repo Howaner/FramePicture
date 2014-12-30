@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import net.minecraft.server.v1_7_R4.Packet;
+import net.minecraft.server.v1_8_R1.Packet;
 import org.bukkit.entity.Player;
 
 public class PacketSender implements Runnable {
