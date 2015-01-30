@@ -349,34 +349,12 @@ public class FrameListener implements Listener {
 		Player player = null;
 		if (event instanceof HangingBreakByEntityEvent) {
 			Entity remover = ((HangingBreakByEntityEvent)event).getRemover();
-			
-			switch (remover.getType()) {
-				case PLAYER:
-				{
-					player = (Player)remover;
-					break;
-				}
-				case ARROW:
-				case EGG:
-				case ENDER_PEARL:
-				case FIREBALL:
-				case SILVERFISH:
-				case SNOWBALL:
-				case THROWN_EXP_BOTTLE:
-				case SPLASH_POTION:
-				case WITHER_SKULL:
-				{
-					Projectile projectile = (Projectile)remover;
-					if ((projectile.getShooter() != null) && (projectile.getShooter() instanceof Player)) {
-						player = (Player)projectile.getShooter();
-					}
-					break;
-				}
-				default:
-				{
-					event.setCancelled(true);
-					return;
-				}
+
+			if (remover.getType() == EntityType.PLAYER) {
+				player = (Player) remover;
+			} else {
+				event.setCancelled(true);
+				return;
 			}
 		}
 			
