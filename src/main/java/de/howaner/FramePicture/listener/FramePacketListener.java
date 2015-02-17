@@ -1,7 +1,6 @@
 package de.howaner.FramePicture.listener;
 
 import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.ListeningWhitelist;
@@ -29,9 +28,12 @@ public class FramePacketListener implements PacketListener {
 			final Player player = pe.getPlayer();
 			
 			int entityID = packet.getIntegers().read(0);
-			int posX = (int) Math.floor((double)packet.getIntegers().read(1) / 32.0);
-			int posY = (int) Math.floor((double)packet.getIntegers().read(2) / 32.0);
-			int posZ = (int) Math.floor((double)packet.getIntegers().read(3) / 32.0);
+			Location loc = new Location(
+					player.getWorld(),
+					((double)packet.getIntegers().read(1) / 32.0D),
+					((double)packet.getIntegers().read(2) / 32.0D),
+					((double)packet.getIntegers().read(3) / 32.0D)
+			);
 			int entityType = packet.getIntegers().read(9);
 			int direction = packet.getIntegers().read(10);
 
@@ -40,14 +42,6 @@ public class FramePacketListener implements PacketListener {
 				return;
 			}
 
-			switch (direction) {
-				case 0: posZ++; break;
-				case 1: posX--; break;
-				case 2: posZ--; break;
-				case 3: posX++; break;
-			}
-
-			Location loc = new Location(player.getWorld(), posX, posY, posZ);
 			Chunk chunk = loc.getChunk();
 			if (!chunk.isLoaded()) {
 				return;

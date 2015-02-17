@@ -107,15 +107,12 @@ public class Utils {
 	}
 	
 	public static boolean isSameLocation(Location loc1, Location loc2) {
-		if (
+		return (
 			(loc1.getWorld() == loc2.getWorld()) &&
 			(loc1.getBlockX() == loc2.getBlockX()) &&
 			(loc1.getBlockY() == loc2.getBlockY()) &&
 			(loc1.getBlockZ() == loc2.getBlockZ())
-		) {
-			return true;
-		}
-		return false;
+		);
 	}
 	
 	public static int diff(int v1, int v2) {

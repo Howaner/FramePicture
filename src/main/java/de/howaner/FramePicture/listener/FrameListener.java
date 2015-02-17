@@ -26,7 +26,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -293,6 +292,7 @@ public class FrameListener implements Listener {
 			}
 			player.sendMessage(Lang.PREFIX.getText() + Lang.GET_URL.getText()
 				.replace("%url", frame.getPicture())
+				.replace("%entity", (frame.isLoaded() ? String.valueOf(frame.getEntity().getEntityId()) : "Not loaded"))
 				.replace("%id", String.valueOf(frame.getId())));
 			Cache.removeCacheGetting(player);
 		}
@@ -349,15 +349,11 @@ public class FrameListener implements Listener {
 		Player player = null;
 		if (event instanceof HangingBreakByEntityEvent) {
 			Entity remover = ((HangingBreakByEntityEvent)event).getRemover();
-
 			if (remover.getType() == EntityType.PLAYER) {
 				player = (Player) remover;
-			} else {
-				event.setCancelled(true);
-				return;
 			}
 		}
-			
+
 		if ((player != null) && Config.WORLDGUARD_ENABLED && Config.WORLDGUARD_BREAK && !player.hasPermission("FramePicture.ignoreWorldGuard"))
 		{
 			RegionManager rm = FramePicturePlugin.getWorldGuard().getRegionManager(player.getWorld());

@@ -6,6 +6,7 @@ import de.howaner.FramePicture.render.TextRenderer;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import net.minecraft.server.v1_8_R1.DataWatcher;
 import net.minecraft.server.v1_8_R1.EntityItemFrame;
 import net.minecraft.server.v1_8_R1.MapIcon;
@@ -123,13 +124,9 @@ public class Frame {
 			nmsItem.a(entity);
 
 			DataWatcher watcher = new DataWatcher(entity);
-			watcher.add(2, 5); //1.7
-			watcher.add(8, 5); //1.8
+			watcher.a(8, nmsItem);
 			watcher.a(3, (byte)0);
-			watcher.watch(2, nmsItem); //1.7
-			watcher.watch(8, nmsItem); //1.8
-			watcher.update(2); //1.7
-			watcher.update(8); //1.8
+			watcher.update(8);
 
 			this.cachedItemPacket = new PacketPlayOutEntityMetadata(entity.getId(), watcher, false);
 		}
@@ -151,19 +148,10 @@ public class Frame {
 				}
 
 				byte[] newBytes = Arrays.copyOfRange(bytes, 3, bytes.length);
-				//this.cachedDataPacket[x] = new PacketPlayOutMap(this.getMapId(), (byte) 3, new ArrayList<MapIcon>(), newBytes, bytes[1], bytes[2], 1, bytes.length - 3);
 
 				PacketPlayOutMap packet = new PacketPlayOutMap(this.getMapId(), (byte) 3, new ArrayList<MapIcon>(), newBytes, bytes[1], bytes[2], 0, bytes.length - 3);
 				Utils.setPrivateField(packet, "f", 1);
 				Utils.setPrivateField(packet, "h", newBytes);
-				/*Utils.setPrivateField(packet, "a", this.getMapId());
-				Utils.setPrivateField(packet, "b", (byte) 3);
-				Utils.setPrivateField(packet, "c", new ArrayList<MapIcon>());
-				Utils.setPrivateField(packet, "d", newBytes);
-				Utils.setPrivateField(packet, "e", bytes[1]);
-				Utils.setPrivateField(packet, "f", bytes[2]);
-				Utils.setPrivateField(packet, "g", 1);
-				Utils.setPrivateField(packet, "h", bytes.length - 3);*/
 				this.cachedDataPacket[x] = packet;
 			}
 		}
@@ -175,7 +163,7 @@ public class Frame {
 	public MapRenderer generateRenderer() {
 		BufferedImage image = Frame.this.getBufferImage();
 		if (image == null) {
-			FramePicturePlugin.log.warning("The picture \"" + Frame.this.getPicture() + "\" from frame #" + Frame.this.getId() + " doesn't exists!");
+			FramePicturePlugin.log.log(Level.WARNING, "The picture \"{0}\" from frame #{1} doesn''t exists!", new Object[]{Frame.this.getPicture(), Frame.this.getId()});
 			return new TextRenderer("Can't read image!", this.getId());
 		}
 		

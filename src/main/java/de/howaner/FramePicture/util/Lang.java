@@ -23,7 +23,7 @@ public enum Lang {
 	FRAME_SET("&2Frame with ID &7#%id&2 created!"),
 	MULTIFRAME_SET("&2%amount frames created!"),
 	NO_FRAMEPICTURE("&4This isn't a frame picture!"),
-	GET_URL("&3Frame infos:\n&fID: &7#%id\n&fURL: &7%url"),
+	GET_URL("&3Frame infos:\n&fID: &7#%id\n&fCurrent entity id: &7%entity\n&fURL: &7%url"),
 	NO_PICTURE("&4Unknown picture format: %url"),
 	PREFIX("&7[&6FramePicture&7] &f"),
 	NOT_ENOUGH_MONEY("&4You haven't enough Money!"),

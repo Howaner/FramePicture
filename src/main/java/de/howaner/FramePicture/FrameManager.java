@@ -139,9 +139,7 @@ public class FrameManager {
 		List<Frame> frameList = this.getFramesInChunk(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
 		
 		for (Frame frame : frameList) {
-			if (!frame.isLoaded()) continue;
-			ItemFrame entity = frame.getEntity();
-			if (Utils.isSameLocation(entity.getLocation(), loc) && ((face == null) || (entity.getFacing() == face))) {
+			if (Utils.isSameLocation(frame.getLocation(), loc) && ((face == null) || (frame.getFacing() == face))) {
 				return frame;
 			}
 		}
