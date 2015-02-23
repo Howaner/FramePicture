@@ -89,6 +89,8 @@ public class FrameManager {
 			this.pictureDB.stopScheduler();
 			this.pictureDB.clear();
 		}
+
+		ProtocolLibrary.getProtocolManager().removePacketListeners(this.p);
 		Bukkit.getScheduler().cancelTasks(this.p);
 	}
 	

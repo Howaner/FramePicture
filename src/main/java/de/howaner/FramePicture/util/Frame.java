@@ -31,7 +31,7 @@ public class Frame {
 	private final Location loc;
 	private final String picture;
 	private PacketPlayOutEntityMetadata cachedItemPacket = null;
-	private PacketPlayOutMap[] cachedDataPacket = null;
+	private PacketPlayOutMap cachedDataPacket = null;
 	
 	public Frame(final int id, String picture, Location loc, BlockFace face) {
 		this.id = id;
@@ -137,33 +137,18 @@ public class Frame {
 	
 	private void sendMapData(Player player) {
 		if (this.cachedDataPacket == null) {
-			this.cachedDataPacket = new PacketPlayOutMap[128];
-			
 			RenderData data = this.getRenderData();
-			for (int x = 0; x < 128; x++) {
-				byte[] bytes = new byte[''];
-				bytes[1] = ((byte)x);
-				for (int y = 0; y < 128; y++) {
-					bytes[(y + 3)] = data.buffer[y * 128 + x];
-				}
-
-				byte[] newBytes = Arrays.copyOfRange(bytes, 3, bytes.length);
-
-				PacketPlayOutMap packet = new PacketPlayOutMap(this.getMapId(), (byte) 3, new ArrayList<MapIcon>(), newBytes, bytes[1], bytes[2], 0, bytes.length - 3);
-				Utils.setPrivateField(packet, "f", 1);
-				Utils.setPrivateField(packet, "h", newBytes);
-				this.cachedDataPacket[x] = packet;
-			}
+			this.cachedDataPacket = new PacketPlayOutMap(this.getMapId(), (byte) 3, new ArrayList<MapIcon>(), data.buffer, 0, 0, 128, 128);
 		}
-		
+
 		if (player != null)
-			PacketSender.addPacketToPlayer(player, this.cachedDataPacket);
+			PacketSender.addPacketToQueue(player, this.cachedDataPacket);
 	}
 	
 	public MapRenderer generateRenderer() {
 		BufferedImage image = Frame.this.getBufferImage();
 		if (image == null) {
-			FramePicturePlugin.log.log(Level.WARNING, "The picture \"{0}\" from frame #{1} doesn''t exists!", new Object[]{Frame.this.getPicture(), Frame.this.getId()});
+			FramePicturePlugin.log.log(Level.WARNING, "The picture \"{0}\" from frame #{1} doesn't exists!", new Object[]{Frame.this.getPicture(), Frame.this.getId()});
 			return new TextRenderer("Can't read image!", this.getId());
 		}
 		

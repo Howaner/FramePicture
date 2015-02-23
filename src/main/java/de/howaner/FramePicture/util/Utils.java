@@ -59,20 +59,16 @@ public class Utils {
 		return buffer;
 	}
 	
-	public static void sendPacketsFast(Player player, Packet[] packets) {
+	public static void sendPacketFast(Player player, Packet packet) {
 		try {
 			NetworkManager netty = ((CraftPlayer)player).getHandle().playerConnection.networkManager;
 			Field field = NetworkManager.class.getDeclaredField("i");
 			field.setAccessible(true);
 			Channel channel = (Channel)field.get(netty);
 			
-			for (Packet packet : packets) {
-				if (packet == null) continue;
-				channel.write(packet);
-			}
-			channel.flush();
+			channel.writeAndFlush(packet);
 		} catch (Exception e) {
-			FramePicturePlugin.log.log(Level.WARNING, "Cant't send packets!", e);
+			FramePicturePlugin.log.log(Level.WARNING, "Cant't send packet", e);
 		}
 	}
 	

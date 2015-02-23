@@ -308,7 +308,6 @@ public class FrameListener implements Listener {
 		if (Cache.hasCacheCreating(player)) Cache.removeCacheCreating(player);
 		if (Cache.hasCacheMultiCreating(player)) Cache.removeCacheMultiCreating(player);
 		if (Cache.hasCacheGetting(player)) Cache.removeCacheGetting(player);
-		if (PacketSender.packetsToSend.containsKey(player)) PacketSender.packetsToSend.remove(player);
 	}
 	
 	@EventHandler (priority = EventPriority.HIGH)
@@ -378,7 +377,7 @@ public class FrameListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-		PacketSender.packetsToSend.remove(event.getPlayer());
+		PacketSender.removePlayerFromQueue(event.getPlayer());
 	}
 	
 	@EventHandler
