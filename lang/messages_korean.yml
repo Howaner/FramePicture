@@ -1,0 +1,24 @@
+# The Messages from FramePicture.
+PLUGIN_ENABLED: 플러그인 활성화됨!
+PLUGIN_DISABLED: 플러그인 비활성화됨!
+NO_PLAYER: '&4당신은 플레이어가 아닙니다!'
+NO_PERMISSION: '&4권한 없음!'
+ALREADY_SELECTION: '&4이미 선택했습니다!'
+CLICK_FRAME: '&3프레임을 클릭해 주세요!'
+GETTING_MODE_ENABLED: '&2얻는(Getting) 모드가 활성화됨!'
+GETTING_MODE_DISABLED: '&2얻는(Getting) 모드가 비활성화됨!'
+CREATING_CANCELLED: '&3생성이 취소되었습니다!'
+PLUGIN_RELOAD: '&2플러그인이 다시 로드되었습니다!'
+FRAME_SET: '&2ID가 &7#%id&2인 프레임이 생성되었습니다!'
+NO_FRAMEPICTURE: '&4액자가 아닙니다!'
+GET_URL: '&3프레임으로부터의 정보:
+
+  &fID: &7#%id
+
+  &fURL: &7%url'
+NO_PICTURE: '&4%url 는(은) 사진이 아닙니다.'
+PREFIX: '&7[&6FramePicture&7] &f'
+NOT_ENOUGH_MONEY: '&4돈이 부족합니다!'
+PLEASE_WAIT: '&7기다려 주세요..'
+FRAME_REMOVED: '&3프레임 제거됨!'
+ALREADY_FRAME_ITEM: '&4이 프레임은 이미 아이템입니다.!'
