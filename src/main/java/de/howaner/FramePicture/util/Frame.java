@@ -7,18 +7,18 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
-import net.minecraft.server.v1_8_R1.DataWatcher;
-import net.minecraft.server.v1_8_R1.EntityItemFrame;
-import net.minecraft.server.v1_8_R1.MapIcon;
-import net.minecraft.server.v1_8_R1.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_8_R1.PacketPlayOutMap;
+import net.minecraft.server.v1_8_R3.DataWatcher;
+import net.minecraft.server.v1_8_R3.EntityItemFrame;
+import net.minecraft.server.v1_8_R3.MapIcon;
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntityMetadata;
+import net.minecraft.server.v1_8_R3.PacketPlayOutMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftItemFrame;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_8_R1.map.RenderData;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItemFrame;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_8_R3.map.RenderData;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -119,7 +119,7 @@ public class Frame {
 			ItemStack item = new ItemStack(Material.MAP);
 			item.setDurability(this.getMapId());
 
-			net.minecraft.server.v1_8_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.server.v1_8_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 			nmsItem.count = 1;
 			nmsItem.a(entity);
 
