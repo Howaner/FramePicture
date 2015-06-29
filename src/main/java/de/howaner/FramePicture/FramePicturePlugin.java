@@ -20,7 +20,7 @@ public class FramePicturePlugin extends JavaPlugin {
 	
 	private void checkBukkitVersion() {
 		try {
-			Class.forName("net.minecraft.server.v1_8_R1.Packet");
+			Class.forName("net.minecraft.server.v1_8_R3.Packet");
 			this.invalidBukkit = false;
 		} catch (Exception e) {
 			this.invalidBukkit = true;
