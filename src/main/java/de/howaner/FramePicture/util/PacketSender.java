@@ -3,7 +3,7 @@ package de.howaner.FramePicture.util;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.minecraft.server.v1_8_R1.Packet;
+import net.minecraft.server.v1_8_R3.Packet;
 import org.bukkit.entity.Player;
 
 public class PacketSender implements Runnable {
